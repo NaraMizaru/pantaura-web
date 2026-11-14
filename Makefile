@@ -21,4 +21,4 @@ docker-build-web:
 	docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} -f Dockerfile -t siagakita/web:${IMAGE_VERSION} .
 
 migrate-fresh:
-	php artisan migrate:fresh --force && php artisan optimize:clear && php artisan shield:generate --all --panel=admin --no-interaction && php artisan db:seed --force
+	php artisan migrate:fresh --force && php artisan optimize:clear && php artisan db:seed --force
