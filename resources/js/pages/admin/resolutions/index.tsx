@@ -91,7 +91,7 @@ export default function AdminResolutionsIndex({
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">
-                            Verifikasi Penyelesaian Banjir
+                            Verifikasi Penyelesaian Bencana
                         </h1>
                         <p className="text-sm text-muted-foreground">
                             Periksa bukti foto atau video terbaru sebelum

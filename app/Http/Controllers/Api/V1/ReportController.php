@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\DisasterType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\StoreAdditionalReportRequest;
 use App\Http\Requests\Api\V1\StoreReportRequest;
@@ -38,12 +39,15 @@ class ReportController extends Controller
                 'longitude' => (float) $validated['longitude'],
                 'description' => (string) $validated['description'],
                 'address' => isset($validated['address']) ? (string) $validated['address'] : null,
+                'disaster_type' => isset($validated['disaster_type'])
+                    ? DisasterType::from((string) $validated['disaster_type'])
+                    : DisasterType::Flood,
             ],
             $files,
         );
 
         return response()->json([
-            'message' => 'Laporan banjir berhasil dikirim.',
+            'message' => 'Laporan bencana berhasil dikirim.',
             'data' => new ReportResource($report),
         ], 201);
     }

@@ -1,3 +1,5 @@
+export type DisasterType = 'flood' | 'earthquake' | 'landslide' | 'fire';
+
 export type IncidentStatus =
     | 'unverified'
     | 'verified'
@@ -21,6 +23,8 @@ export type MediaItem = {
 export type IncidentMarker = {
     id: string;
     title: string;
+    disaster_type: DisasterType;
+    disaster_type_label: string;
     description: string;
     latitude: number;
     longitude: number;
@@ -37,6 +41,14 @@ export type StatusCounts = {
     verified: number;
     resolution_submitted: number;
     resolved: number;
+};
+
+export type DisasterTypeCounts = {
+    all: number;
+    flood: number;
+    earthquake: number;
+    landslide: number;
+    fire: number;
 };
 
 export type PaginatedData<T> = {

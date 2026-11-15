@@ -49,6 +49,8 @@ class ReportManagementController extends Controller
                 'incident' => $report->incident !== null ? [
                     'id' => $report->incident->id,
                     'title' => $report->incident->title,
+                    'disaster_type' => $report->incident->disaster_type->value,
+                    'disaster_type_label' => $report->incident->disaster_type->label(),
                     'status' => $report->incident->status->value,
                 ] : null,
             ]);
@@ -67,9 +69,12 @@ class ReportManagementController extends Controller
             $report->latitude,
             $report->longitude,
             $report->incident_id,
+            $report->incident?->disaster_type,
         )->map(fn (Incident $incident): array => [
             'id' => $incident->id,
             'title' => $incident->title,
+            'disaster_type' => $incident->disaster_type->value,
+            'disaster_type_label' => $incident->disaster_type->label(),
             'address' => $incident->address,
             'status' => $incident->status->value,
             'reports_count' => $incident->reports_count ?? 0,
@@ -95,6 +100,8 @@ class ReportManagementController extends Controller
                 'incident' => $report->incident !== null ? [
                     'id' => $report->incident->id,
                     'title' => $report->incident->title,
+                    'disaster_type' => $report->incident->disaster_type->value,
+                    'disaster_type_label' => $report->incident->disaster_type->label(),
                     'status' => $report->incident->status->value,
                 ] : null,
                 'media' => $report->media->map(fn ($m): array => [

@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/siagakita/ui-states';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type {
+    DisasterType,
     IncidentStatus,
     ModerationStatus,
     PaginatedData,
@@ -19,7 +20,13 @@ type ReportRow = {
     submitted_at: string;
     media_count: number;
     reporter: { id: string | null; name: string };
-    incident: { id: string; title: string; status: IncidentStatus } | null;
+    incident: {
+        id: string;
+        title: string;
+        disaster_type: DisasterType;
+        disaster_type_label: string;
+        status: IncidentStatus;
+    } | null;
 };
 
 type ReportsIndexProps = {
@@ -131,6 +138,12 @@ export default function AdminReportsIndex({
                                                             {
                                                                 report.incident
                                                                     .title
+                                                            }
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {
+                                                                report.incident
+                                                                    .disaster_type_label
                                                             }
                                                         </p>
                                                         <IncidentStatusBadge

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Incident;
@@ -17,16 +18,21 @@ class IncidentManagementController extends Controller
     {
         $status = $request->query('status');
         $activeStatus = is_string($status) && IncidentStatus::tryFrom($status) !== null ? $status : null;
+        $type = $request->query('type');
+        $activeType = is_string($type) ? DisasterType::tryFrom($type) : null;
 
         $incidents = Incident::query()
             ->withCount(['reports', 'resolutionSubmissions'])
             ->when($activeStatus !== null, fn ($q) => $q->where('status', $activeStatus))
+            ->when($activeType !== null, fn ($q) => $q->where('disaster_type', $activeType->value))
             ->latest()
             ->paginate(15)
             ->withQueryString()
             ->through(fn (Incident $incident): array => [
                 'id' => $incident->id,
                 'title' => $incident->title,
+                'disaster_type' => $incident->disaster_type->value,
+                'disaster_type_label' => $incident->disaster_type->label(),
                 'address' => $incident->address,
                 'status' => $incident->status->value,
                 'reports_count' => $incident->reports_count ?? 0,
@@ -37,6 +43,7 @@ class IncidentManagementController extends Controller
         return Inertia::render('admin/incidents/index', [
             'incidents' => $incidents,
             'activeStatus' => $activeStatus,
+            'activeType' => $activeType?->value,
         ]);
     }
 
@@ -55,6 +62,8 @@ class IncidentManagementController extends Controller
             'incident' => [
                 'id' => $incident->id,
                 'title' => $incident->title,
+                'disaster_type' => $incident->disaster_type->value,
+                'disaster_type_label' => $incident->disaster_type->label(),
                 'description' => $incident->description,
                 'latitude' => $incident->latitude,
                 'longitude' => $incident->longitude,

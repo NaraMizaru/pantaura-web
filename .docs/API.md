@@ -1,6 +1,6 @@
 # SiagaKita REST API Documentation (`v1`)
 
-Dokumentasi resmi untuk REST API `/api/v1` platform pelaporan dan pemantauan banjir **SiagaKita**.
+Dokumentasi resmi untuk REST API `/api/v1` platform pelaporan dan pemantauan bencana **SiagaKita**.
 
 - **Base URL (Local Docker):** `http://localhost:8080/api/v1`
 - **Interactive Swagger UI:** [`/api/docs`](http://localhost:8080/api/docs)
@@ -64,10 +64,10 @@ Semua request ke `/api/*` otomatis merender respons JSON:
 
 | Method | Endpoint | Auth | Deskripsi |
 |---|---|---|---|
-| `POST` | `/reports` | Bearer Token | Kirim laporan banjir baru + 1–5 file media bukti |
+| `POST` | `/reports` | Bearer Token | Kirim laporan bencana baru + 1–5 file media bukti |
 | `GET` | `/reports/my` | Bearer Token | Daftar terpaginasi laporan milik user yang login |
 | `POST` | `/incidents/{incident}/reports` | Bearer Token | Tambah laporan baru ke insiden aktif yang sudah ada |
-| `POST` | `/incidents/{incident}/resolutions` | Bearer Token | Ajukan bukti penyelesaian/surutnya banjir untuk insiden |
+| `POST` | `/incidents/{incident}/resolutions` | Bearer Token | Ajukan bukti penyelesaian/kondisi pulih untuk insiden |
 
 ---
 
@@ -88,9 +88,10 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
   }'
 ```
 
-### Mengirim Laporan Banjir Baru (`multipart/form-data`)
+### Mengirim Laporan Bencana Baru (`multipart/form-data`)
 
 Aturan validasi `POST /api/v1/reports`:
+- `disaster_type`: opsional, salah satu `flood`, `earthquake`, `landslide`, `fire` (default `flood`)
 - `latitude`: wajib, numerik antara `-90` hingga `90`
 - `longitude`: wajib, numerik antara `-180` hingga `180`
 - `description`: wajib, string `10`–`2000` karakter
@@ -101,6 +102,7 @@ Aturan validasi `POST /api/v1/reports`:
 curl -X POST http://localhost:8080/api/v1/reports \
   -H "Accept: application/json" \
   -H "Authorization: Bearer YOUR_SANCTUM_TOKEN" \
+  -F "disaster_type=flood" \
   -F "latitude=-6.208763" \
   -F "longitude=106.845599" \
   -F "address=Jl. Jenderal Sudirman, Jakarta Pusat" \
@@ -111,7 +113,7 @@ curl -X POST http://localhost:8080/api/v1/reports \
 ### Mengambil Daftar Marker Peta (JavaScript `fetch`)
 
 ```javascript
-const response = await fetch('http://localhost:8080/api/v1/incidents/map?status=verified', {
+const response = await fetch('http://localhost:8080/api/v1/incidents/map?status=verified&type=flood', {
   headers: {
     Accept: 'application/json',
   },

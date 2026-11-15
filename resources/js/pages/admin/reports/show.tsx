@@ -1,7 +1,7 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, Check, Layers, X } from 'lucide-react';
 import { useState } from 'react';
-import { FloodMap } from '@/components/siagakita/flood-map';
+import { DisasterMap } from '@/components/siagakita/disaster-map';
 import { MediaGallery } from '@/components/siagakita/media-gallery';
 import {
     IncidentStatusBadge,
@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import type {
+    DisasterType,
     IncidentStatus,
     MediaItem,
     ModerationStatus,
@@ -39,6 +40,8 @@ type ReportShowProps = {
         incident: {
             id: string;
             title: string;
+            disaster_type: DisasterType;
+            disaster_type_label: string;
             status: IncidentStatus;
         } | null;
         media: MediaItem[];
@@ -46,6 +49,8 @@ type ReportShowProps = {
     nearbyCandidates: Array<{
         id: string;
         title: string;
+        disaster_type: DisasterType;
+        disaster_type_label: string;
         address: string | null;
         status: IncidentStatus;
         reports_count: number;
@@ -168,13 +173,19 @@ export default function AdminReportShow({
                             </CardContent>
                         </Card>
 
-                        <FloodMap
+                        <DisasterMap
                             incidents={[
                                 {
                                     id: report.incident?.id ?? report.id,
                                     title:
                                         report.incident?.title ??
                                         'Lokasi Laporan',
+                                    disaster_type:
+                                        report.incident?.disaster_type ??
+                                        'flood',
+                                    disaster_type_label:
+                                        report.incident
+                                            ?.disaster_type_label ?? 'Banjir',
                                     description: report.description,
                                     latitude: report.latitude,
                                     longitude: report.longitude,
@@ -200,9 +211,17 @@ export default function AdminReportShow({
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-2">
-                                    <IncidentStatusBadge
-                                        status={report.incident.status}
-                                    />
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-foreground">
+                                            {
+                                                report.incident
+                                                    .disaster_type_label
+                                            }
+                                        </span>
+                                        <IncidentStatusBadge
+                                            status={report.incident.status}
+                                        />
+                                    </div>
                                     <p className="font-semibold">
                                         {report.incident.title}
                                     </p>
@@ -265,6 +284,11 @@ export default function AdminReportShow({
                                                 <p className="text-sm font-semibold">
                                                     {candidate.title}
                                                 </p>
+                                                <p className="text-xs font-medium text-muted-foreground">
+                                                    {
+                                                        candidate.disaster_type_label
+                                                    }
+                                                </p>
                                                 {candidate.address && (
                                                     <p className="text-xs text-muted-foreground">
                                                         {candidate.address}
@@ -311,7 +335,7 @@ export default function AdminReportShow({
                                 onChange={(e) =>
                                     rejectForm.setData('reason', e.target.value)
                                 }
-                                placeholder="Contoh: Bukti foto tidak menunjukkan kondisi banjir atau lokasi tidak sesuai."
+                                placeholder="Contoh: Bukti foto tidak menunjukkan kondisi bencana atau lokasi tidak sesuai."
                                 className="w-full rounded-md border bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                             />
                             {rejectForm.errors.reason && (

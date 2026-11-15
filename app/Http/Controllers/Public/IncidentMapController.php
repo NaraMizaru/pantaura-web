@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Public;
 
+use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Incident;
@@ -22,15 +23,21 @@ class IncidentMapController extends Controller
             ? $statusFilter
             : null;
 
+        $typeFilter = $request->query('type');
+        $activeType = is_string($typeFilter) ? DisasterType::tryFrom($typeFilter) : null;
+
         $incidents = Incident::query()
             ->publiclyVisible()
             ->when($activeStatus !== null, fn ($q) => $q->where('status', $activeStatus))
+            ->when($activeType !== null, fn ($q) => $q->where('disaster_type', $activeType->value))
             ->withCount('reports')
             ->latest()
             ->get()
             ->map(fn (Incident $incident): array => [
                 'id' => $incident->id,
                 'title' => $incident->title,
+                'disaster_type' => $incident->disaster_type->value,
+                'disaster_type_label' => $incident->disaster_type->label(),
                 'description' => $incident->description,
                 'latitude' => $incident->latitude,
                 'longitude' => $incident->longitude,
@@ -43,19 +50,35 @@ class IncidentMapController extends Controller
 
         $statusCounts = Incident::query()
             ->publiclyVisible()
+            ->when($activeType !== null, fn ($q) => $q->where('disaster_type', $activeType->value))
             ->selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
 
+        $typeCounts = Incident::query()
+            ->publiclyVisible()
+            ->when($activeStatus !== null, fn ($q) => $q->where('status', $activeStatus))
+            ->selectRaw('disaster_type, count(*) as total')
+            ->groupBy('disaster_type')
+            ->pluck('total', 'disaster_type');
+
         return Inertia::render('public/map', [
             'incidents' => $incidents,
             'activeStatus' => $activeStatus,
+            'activeType' => $activeType?->value,
             'statusCounts' => [
                 'all' => $statusCounts->sum(),
                 'unverified' => (int) ($statusCounts[IncidentStatus::Unverified->value] ?? 0),
                 'verified' => (int) ($statusCounts[IncidentStatus::Verified->value] ?? 0),
                 'resolution_submitted' => (int) ($statusCounts[IncidentStatus::ResolutionSubmitted->value] ?? 0),
                 'resolved' => (int) ($statusCounts[IncidentStatus::Resolved->value] ?? 0),
+            ],
+            'typeCounts' => [
+                'all' => $typeCounts->sum(),
+                'flood' => (int) ($typeCounts[DisasterType::Flood->value] ?? 0),
+                'earthquake' => (int) ($typeCounts[DisasterType::Earthquake->value] ?? 0),
+                'landslide' => (int) ($typeCounts[DisasterType::Landslide->value] ?? 0),
+                'fire' => (int) ($typeCounts[DisasterType::Fire->value] ?? 0),
             ],
         ]);
     }
@@ -79,6 +102,8 @@ class IncidentMapController extends Controller
             'incident' => [
                 'id' => $incident->id,
                 'title' => $incident->title,
+                'disaster_type' => $incident->disaster_type->value,
+                'disaster_type_label' => $incident->disaster_type->label(),
                 'description' => $incident->description,
                 'latitude' => $incident->latitude,
                 'longitude' => $incident->longitude,

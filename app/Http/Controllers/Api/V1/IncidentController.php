@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\IncidentResource;
@@ -17,6 +18,8 @@ class IncidentController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $statusFilter = $request->query('status');
+        $typeFilter = $request->query('type');
+        $activeType = is_string($typeFilter) ? DisasterType::tryFrom($typeFilter) : null;
 
         $incidents = Incident::query()
             ->publiclyVisible()
@@ -24,6 +27,7 @@ class IncidentController extends Controller
                 is_string($statusFilter) && IncidentStatus::tryFrom($statusFilter) !== null && $statusFilter !== IncidentStatus::Rejected->value,
                 fn ($q) => $q->where('status', $statusFilter)
             )
+            ->when($activeType !== null, fn ($q) => $q->where('disaster_type', $activeType->value))
             ->withCount('reports')
             ->latest()
             ->paginate(15);
@@ -34,6 +38,8 @@ class IncidentController extends Controller
     public function map(Request $request): JsonResponse
     {
         $statusFilter = $request->query('status');
+        $typeFilter = $request->query('type');
+        $activeType = is_string($typeFilter) ? DisasterType::tryFrom($typeFilter) : null;
 
         $incidents = Incident::query()
             ->publiclyVisible()
@@ -41,9 +47,10 @@ class IncidentController extends Controller
                 is_string($statusFilter) && IncidentStatus::tryFrom($statusFilter) !== null && $statusFilter !== IncidentStatus::Rejected->value,
                 fn ($q) => $q->where('status', $statusFilter)
             )
+            ->when($activeType !== null, fn ($q) => $q->where('disaster_type', $activeType->value))
             ->withCount('reports')
             ->latest()
-            ->get(['id', 'title', 'latitude', 'longitude', 'address', 'status', 'created_at']);
+            ->get(['id', 'title', 'disaster_type', 'latitude', 'longitude', 'address', 'status', 'created_at']);
 
         return response()->json([
             'data' => IncidentResource::collection($incidents),

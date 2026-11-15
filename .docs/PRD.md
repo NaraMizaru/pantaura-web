@@ -4,7 +4,7 @@
 **Status:** Draft  
 **Product Category:** Disaster Reporting & Monitoring Platform  
 **Target Competition:** Software Development Competition  
-**Primary Disaster:** Flood  
+**Supported Disasters:** Flood (primary), Earthquake, Landslide, Fire  
 **Geographical Scope:** City-level  
 **Target Users:** General Public, Administrators
 
@@ -14,25 +14,25 @@
 
 ## 1.1 Product Description
 
-SiagaKita adalah platform pelaporan dan pemantauan kejadian banjir berbasis lokasi yang memungkinkan masyarakat melaporkan kondisi banjir secara langsung melalui aplikasi mobile.
+SiagaKita adalah platform pelaporan dan pemantauan kejadian bencana berbasis lokasi yang memungkinkan masyarakat melaporkan kondisi bencana secara langsung melalui aplikasi mobile.
 
 Setiap laporan dilengkapi dengan koordinat lokasi, deskripsi kejadian, serta bukti visual berupa foto atau video.
 
 Laporan yang masuk akan langsung ditampilkan pada peta publik dengan status verifikasi yang jelas. Administrator bertugas memeriksa validitas laporan dan mengonfirmasi kejadian.
 
-SiagaKita juga memungkinkan masyarakat berkontribusi dalam mengonfirmasi kondisi akhir suatu kejadian banjir melalui pengiriman bukti bahwa banjir telah surut atau kondisi telah kembali normal.
+SiagaKita juga memungkinkan masyarakat berkontribusi dalam mengonfirmasi kondisi akhir suatu kejadian bencana melalui pengiriman bukti bahwa kondisi bencana telah pulih atau kembali normal.
 
 ## 1.2 Problem Statement
 
-Informasi mengenai kejadian banjir sering kali tersebar melalui media sosial atau komunikasi informal. Informasi tersebut belum tentu memiliki lokasi yang akurat, bukti visual yang memadai, atau status validasi yang jelas.
+Informasi mengenai kejadian bencana sering kali tersebar melalui media sosial atau komunikasi informal. Informasi tersebut belum tentu memiliki lokasi yang akurat, bukti visual yang memadai, atau status validasi yang jelas.
 
-Hal ini menyebabkan masyarakat kesulitan memperoleh informasi kondisi banjir di suatu wilayah secara terpusat.
+Hal ini menyebabkan masyarakat kesulitan memperoleh informasi kondisi bencana di suatu wilayah secara terpusat.
 
-SiagaKita hadir untuk menyediakan sistem pelaporan dan pemantauan banjir yang menggabungkan informasi lokasi, bukti visual, kontribusi masyarakat, dan proses verifikasi administrator.
+SiagaKita hadir untuk menyediakan sistem pelaporan dan pemantauan bencana yang menggabungkan informasi lokasi, bukti visual, kontribusi masyarakat, dan proses verifikasi administrator.
 
 ## 1.3 Product Vision
 
-Menjadi platform informasi kejadian banjir berbasis partisipasi masyarakat yang membantu menyediakan informasi lokasi dan kondisi banjir secara transparan, terstruktur, dan dapat diverifikasi.
+Menjadi platform informasi kejadian bencana berbasis partisipasi masyarakat yang membantu menyediakan informasi lokasi dan kondisi bencana secara transparan, terstruktur, dan dapat diverifikasi.
 
 ---
 
@@ -40,12 +40,12 @@ Menjadi platform informasi kejadian banjir berbasis partisipasi masyarakat yang 
 
 Tujuan utama pengembangan SiagaKita:
 
-1. Mempermudah masyarakat melaporkan kejadian banjir berdasarkan lokasi aktual.
-2. Menyediakan informasi persebaran banjir melalui peta publik.
+1. Mempermudah masyarakat melaporkan kejadian bencana berdasarkan lokasi aktual.
+2. Menyediakan informasi persebaran bencana melalui peta publik.
 3. Memberikan transparansi terhadap status validasi setiap kejadian.
-4. Memungkinkan masyarakat berkontribusi dalam memberikan bukti kondisi banjir.
+4. Memungkinkan masyarakat berkontribusi dalam memberikan bukti kondisi bencana.
 5. Menyediakan sistem verifikasi terpusat oleh administrator.
-6. Menghindari duplikasi titik kejadian banjir melalui pengelompokan beberapa laporan menjadi satu insiden.
+6. Menghindari duplikasi titik kejadian bencana melalui pengelompokan beberapa laporan menjadi satu insiden.
 
 ## 2.1 Success Metrics
 
@@ -70,14 +70,14 @@ SiagaKita memiliki dua peran utama.
 Masyarakat merupakan pengguna aplikasi mobile yang dapat:
 
 - Membuat akun dan login.
-- Melaporkan kejadian banjir.
+- Melaporkan kejadian bencana.
 - Mengirim lokasi kejadian.
 - Mengunggah foto atau video.
-- Melihat peta persebaran banjir.
+- Melihat peta persebaran bencana.
 - Memantau status laporan.
 - Melihat detail insiden.
 - Mengirim laporan tambahan pada insiden yang sudah ada.
-- Mengirim bukti bahwa kondisi banjir telah selesai.
+- Mengirim bukti bahwa kondisi bencana telah pulih.
 
 ## 3.2 Administrator
 
@@ -85,7 +85,7 @@ Administrator merupakan pengguna dashboard web yang bertanggung jawab terhadap p
 
 Administrator dapat:
 
-- Melihat ringkasan kejadian banjir.
+- Melihat ringkasan kejadian bencana.
 - Melihat seluruh laporan masyarakat.
 - Memeriksa lokasi dan bukti visual.
 - Memverifikasi laporan.
@@ -101,7 +101,7 @@ Pengunjung public web tidak diwajibkan memiliki akun.
 
 Pengunjung dapat:
 
-- Melihat peta persebaran banjir.
+- Melihat peta persebaran bencana.
 - Melihat status kejadian.
 - Melihat detail insiden.
 - Melihat jumlah laporan masyarakat.
@@ -121,13 +121,13 @@ Aplikasi untuk masyarakat.
 |---|---|---|---|
 | MOB-01 | Authentication | Registrasi dan login pengguna | Must Have |
 | MOB-02 | Home | Ringkasan informasi dan navigasi utama | Must Have |
-| MOB-03 | Flood Map | Menampilkan persebaran insiden banjir | Must Have |
-| MOB-04 | Create Report | Membuat laporan kejadian banjir | Must Have |
+| MOB-03 | Disaster Map | Menampilkan persebaran insiden bencana | Must Have |
+| MOB-04 | Create Report | Membuat laporan kejadian bencana | Must Have |
 | MOB-05 | GPS Location | Mengambil koordinat lokasi pengguna | Must Have |
 | MOB-06 | Media Upload | Mengunggah foto dan video | Must Have |
 | MOB-07 | Report Detail | Melihat detail laporan dan insiden | Must Have |
 | MOB-08 | Report Status | Memantau status laporan | Must Have |
-| MOB-09 | Resolution Submission | Mengirim bukti kondisi banjir telah selesai | Must Have |
+| MOB-09 | Resolution Submission | Mengirim bukti kondisi bencana telah pulih | Must Have |
 | MOB-10 | Additional Report | Memberikan laporan tambahan pada insiden yang sama | Must Have |
 | MOB-11 | Report History | Melihat riwayat kontribusi pengguna | Should Have |
 
@@ -143,7 +143,7 @@ Web application mencakup dua area: administrator dan public monitoring.
 | ADM-02 | Dashboard Overview | Ringkasan jumlah insiden dan laporan | Must Have |
 | ADM-03 | Report Management | Melihat dan mengelola laporan masuk | Must Have |
 | ADM-04 | Report Verification | Memverifikasi atau menolak laporan | Must Have |
-| ADM-05 | Incident Management | Mengelola insiden banjir | Must Have |
+| ADM-05 | Incident Management | Mengelola insiden bencana | Must Have |
 | ADM-06 | Report Grouping | Mengelompokkan laporan yang berkaitan | Must Have |
 | ADM-07 | Resolution Verification | Memverifikasi bukti penyelesaian | Must Have |
 | ADM-08 | User Management | Melihat dan mengelola pengguna | Should Have |
@@ -152,7 +152,7 @@ Web application mencakup dua area: administrator dan public monitoring.
 
 | ID | Feature | Description | Priority |
 |---|---|---|---|
-| PUB-01 | Public Map | Menampilkan titik insiden banjir | Must Have |
+| PUB-01 | Public Map | Menampilkan titik insiden bencana | Must Have |
 | PUB-02 | Incident Status | Menampilkan status setiap insiden | Must Have |
 | PUB-03 | Incident Detail | Melihat detail kejadian | Must Have |
 | PUB-04 | Report Count | Menampilkan jumlah laporan pada insiden | Must Have |
@@ -163,10 +163,10 @@ Web application mencakup dua area: administrator dan public monitoring.
 
 # 5. Core Business Process
 
-## 5.1 Flood Reporting Process
+## 5.1 Disaster Reporting Process
 
 1. Masyarakat membuka aplikasi SiagaKita.
-2. Pengguna memilih fitur pelaporan banjir.
+2. Pengguna memilih fitur pelaporan bencana.
 3. Aplikasi mengambil koordinat GPS.
 4. Pengguna mengisi deskripsi kejadian.
 5. Pengguna mengunggah foto atau video sebagai bukti.
@@ -188,7 +188,7 @@ Web application mencakup dua area: administrator dan public monitoring.
 
 ## 5.2 Incident Grouping Process
 
-Satu kejadian banjir dapat dilaporkan oleh beberapa orang.
+Satu kejadian bencana dapat dilaporkan oleh beberapa orang.
 
 Untuk menghindari duplikasi titik pada peta, SiagaKita menerapkan konsep:
 
@@ -196,9 +196,9 @@ Untuk menghindari duplikasi titik pada peta, SiagaKita menerapkan konsep:
 
 Contoh:
 
-Tiga warga melaporkan banjir di Jalan Ahmad Yani.
+Tiga warga melaporkan bencana di Jalan Ahmad Yani.
 
-- Warga A melaporkan banjir di depan minimarket.
+- Warga A melaporkan bencana di depan minimarket.
 - Warga B melaporkan genangan di jalan yang sama.
 - Warga C melaporkan air mulai memasuki permukiman.
 
@@ -218,7 +218,7 @@ Ketiga laporan tersebut dapat dikelompokkan menjadi satu insiden.
 
 ## 5.3 Resolution Submission Process
 
-SiagaKita memungkinkan masyarakat melaporkan bahwa suatu insiden banjir telah selesai.
+SiagaKita memungkinkan masyarakat melaporkan bahwa suatu insiden bencana telah selesai.
 
 Berbeda dengan laporan awal, bukti penyelesaian dapat dikirim oleh warga lain, tidak harus pelapor pertama.
 
@@ -308,7 +308,7 @@ Persyaratan:
 
 ## FR-04: Public Monitoring
 
-Sistem harus menampilkan persebaran insiden banjir.
+Sistem harus menampilkan persebaran insiden bencana.
 
 Persyaratan:
 - Menampilkan titik berdasarkan koordinat insiden.
@@ -376,7 +376,7 @@ Role:
 
 ## 8.2 Incidents
 
-Merepresentasikan satu kejadian banjir.
+Merepresentasikan satu kejadian bencana.
 
 Fields:
 - id
@@ -509,7 +509,7 @@ Stack:
 
 Responsibilities:
 - Citizen authentication.
-- Flood reporting.
+- Multi-disaster reporting (flood, earthquake, landslide, fire).
 - GPS location.
 - Photo/video upload.
 - Incident monitoring.
@@ -612,7 +612,7 @@ Fokus utama tetap pada pelaporan, pemantauan, pengelompokan insiden, dan verifik
 
 MVP dianggap berhasil apabila skenario berikut dapat berjalan.
 
-### Scenario 1: Citizen Creates a Flood Report
+### Scenario 1: Citizen Creates a Disaster Report
 - Pengguna berhasil login.
 - Pengguna mengirim lokasi GPS.
 - Pengguna mengisi deskripsi.
@@ -678,7 +678,7 @@ Tahapan dapat dikerjakan secara paralel setelah API contract tersedia.
 # 14. Product Constraints & Assumptions
 
 1. SiagaKita dikembangkan untuk kebutuhan kompetisi software development.
-2. Fokus bencana pada tahap MVP adalah banjir.
+2. Tahap MVP mendukung empat jenis bencana: banjir, gempa bumi, tanah longsor, dan kebakaran.
 3. Cakupan geografis menggunakan tingkat kota.
 4. Masyarakat menjadi target pengguna utama.
 5. Semua laporan awal tetap terlihat di peta publik meskipun belum diverifikasi.
@@ -713,13 +713,13 @@ Beberapa keputusan berikut masih perlu difinalisasi sebelum development:
 
 # 16. Final Product Definition
 
-SiagaKita adalah platform pelaporan dan pemantauan banjir berbasis lokasi yang menghubungkan masyarakat dan administrator melalui sistem informasi kejadian yang terpusat.
+SiagaKita adalah platform pelaporan dan pemantauan bencana berbasis lokasi yang menghubungkan masyarakat dan administrator melalui sistem informasi kejadian yang terpusat.
 
 Produk terdiri dari:
 
 **1. SiagaKita Mobile**
 
-Aplikasi Flutter untuk masyarakat dalam melaporkan banjir, mengirim bukti visual, memantau insiden, dan mengonfirmasi kondisi banjir telah selesai.
+Aplikasi Flutter untuk masyarakat dalam melaporkan bencana, mengirim bukti visual, memantau insiden, dan mengonfirmasi kondisi bencana telah pulih.
 
 **2. SiagaKita Web**
 
@@ -735,7 +735,7 @@ Aplikasi Laravel, Inertia, dan React yang menyediakan dashboard administrator se
 
 **Prinsip utama SiagaKita:**
 
-Setiap informasi kejadian banjir dapat berasal dari masyarakat, setiap laporan memiliki bukti dan lokasi, dan setiap status kejadian memiliki proses verifikasi yang jelas.
+Setiap informasi kejadian bencana dapat berasal dari masyarakat, setiap laporan memiliki bukti dan lokasi, dan setiap status kejadian memiliki proses verifikasi yang jelas.
 
 ---
 

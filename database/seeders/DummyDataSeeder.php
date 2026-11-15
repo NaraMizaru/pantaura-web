@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
 use App\Enums\ModerationStatus;
 use App\Enums\ResolutionStatus;
@@ -182,6 +183,68 @@ class DummyDataSeeder extends Seeder
                 'moderation_status' => ModerationStatus::Pending,
             ]);
         }
+
+        $earthquakeIncident = Incident::factory()->ofType(DisasterType::Earthquake)->verified()->create([
+            'title' => 'Getaran Gempa Terasa di Menteng',
+            'description' => 'Getaran kuat terasa selama beberapa detik dan membuat warga berhamburan ke luar gedung.',
+            'latitude' => -6.1954000,
+            'longitude' => 106.8321000,
+            'address' => 'Menteng, Jakarta Pusat',
+            'verified_by' => $admin->id,
+            'verified_at' => now()->subHours(3),
+        ]);
+
+        Report::factory()->create([
+            'incident_id' => $earthquakeIncident->id,
+            'user_id' => $citizenA->id,
+            'description' => 'Getaran terasa sampai lantai tiga, lampu gantung bergoyang.',
+            'latitude' => -6.1954100,
+            'longitude' => 106.8321200,
+            'submitted_at' => now()->subHours(4),
+            'moderation_status' => ModerationStatus::Verified,
+            'reviewed_by' => $admin->id,
+            'reviewed_at' => now()->subHours(3),
+        ]);
+
+        $landslideIncident = Incident::factory()->ofType(DisasterType::Landslide)->create([
+            'title' => 'Tanah Longsor Tebing Jl. Raya Bogor',
+            'description' => 'Material tanah menutup sebagian badan jalan setelah hujan deras semalaman.',
+            'latitude' => -6.2943000,
+            'longitude' => 106.8654000,
+            'address' => 'Jl. Raya Bogor, Jakarta Timur',
+            'status' => IncidentStatus::Unverified,
+        ]);
+
+        Report::factory()->create([
+            'incident_id' => $landslideIncident->id,
+            'user_id' => $citizenC->id,
+            'description' => 'Tebing setinggi sekitar tiga meter longsor dan menutup lajur kiri.',
+            'latitude' => -6.2943000,
+            'longitude' => 106.8654000,
+            'submitted_at' => now()->subMinutes(50),
+            'moderation_status' => ModerationStatus::Pending,
+        ]);
+
+        $fireIncident = Incident::factory()->ofType(DisasterType::Fire)->resolved()->create([
+            'title' => 'Kebakaran Gudang di Penjaringan',
+            'description' => 'Kebakaran menghanguskan gudang penyimpanan dan berhasil dipadamkan petugas.',
+            'latitude' => -6.1256000,
+            'longitude' => 106.7934000,
+            'address' => 'Penjaringan, Jakarta Utara',
+            'verified_by' => $admin->id,
+        ]);
+
+        Report::factory()->create([
+            'incident_id' => $fireIncident->id,
+            'user_id' => $citizenB->id,
+            'description' => 'Asap tebal terlihat dari jalan raya, api sempat membesar.',
+            'latitude' => -6.1256100,
+            'longitude' => 106.7934200,
+            'submitted_at' => now()->subHours(10),
+            'moderation_status' => ModerationStatus::Verified,
+            'reviewed_by' => $admin->id,
+            'reviewed_at' => now()->subHours(9),
+        ]);
 
         $resolutionPendingIncident = Incident::factory()->create([
             'title' => 'Banjir Kawasan Kampung Melayu',

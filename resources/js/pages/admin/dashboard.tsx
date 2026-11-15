@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { FloodMap } from '@/components/siagakita/flood-map';
+import { DisasterMap } from '@/components/siagakita/disaster-map';
 import { EmptyState } from '@/components/siagakita/ui-states';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,7 +45,7 @@ export default function AdminDashboard({
                         Ringkasan Operasional
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Pantau laporan masuk, status insiden banjir, dan
+                        Pantau laporan masuk, status insiden bencana, dan
                         pengajuan penyelesaian.
                     </p>
                 </div>
@@ -107,14 +107,14 @@ export default function AdminDashboard({
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-3">
                         <CardTitle className="text-base">
-                            Peta Persebaran Insiden Banjir
+                            Peta Persebaran Insiden Bencana
                         </CardTitle>
                         <Button asChild variant="outline" size="sm">
                             <Link href="/admin/incidents">Kelola Insiden</Link>
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <FloodMap
+                        <DisasterMap
                             incidents={mapIncidents}
                             detailBasePath="/admin/incidents"
                             className="h-[360px] w-full overflow-hidden rounded-lg border"

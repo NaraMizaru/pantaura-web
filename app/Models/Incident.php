@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
 use Database\Factories\IncidentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -18,6 +19,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $title
+ * @property DisasterType $disaster_type
  * @property string $description
  * @property float $latitude
  * @property float $longitude
@@ -31,6 +33,7 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable([
     'title',
+    'disaster_type',
     'description',
     'latitude',
     'longitude',
@@ -87,6 +90,15 @@ class Incident extends Model
     }
 
     /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeOfType(Builder $query, DisasterType $type): Builder
+    {
+        return $query->where('disaster_type', $type->value);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -94,6 +106,7 @@ class Incident extends Model
         return [
             'latitude' => 'float',
             'longitude' => 'float',
+            'disaster_type' => DisasterType::class,
             'status' => IncidentStatus::class,
             'verified_at' => 'datetime',
             'resolved_at' => 'datetime',

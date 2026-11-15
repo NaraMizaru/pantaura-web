@@ -6,7 +6,7 @@ Panduan konteks dan konvensi proyek untuk developer dan AI coding agent yang bek
 
 ## 1. Gambaran Proyek
 
-**SiagaKita Web** adalah backend terpusat, REST API (`/api/v1`), Public Monitoring Web, dan Admin Dashboard untuk platform pelaporan & pemantauan kejadian banjir **SiagaKita**.
+**SiagaKita Web** adalah backend terpusat, REST API (`/api/v1`), Public Monitoring Web, dan Admin Dashboard untuk platform pelaporan & pemantauan kejadian bencana **SiagaKita**.
 
 Dokumen referensi utama:
 - Product Requirements: [`.docs/PRD.md`](.docs/PRD.md)
@@ -31,7 +31,7 @@ Dokumen referensi utama:
 - `app/Http/Controllers/Admin/` — Admin dashboard (`/admin/*`, dilindungi middleware `auth`, `verified`, `admin`)
 - `resources/js/pages/public/` — UI Publik (menggunakan style **SiagaKita Civic Shield** dari Stitch)
 - `resources/js/pages/admin/` — UI Admin Dashboard (menggunakan layout sidebar `shadcn/ui`)
-- `resources/js/components/siagakita/` — Komponen bersama (`FloodMap`, `MediaGallery`, `StatusBadge`, `EmptyState`, `FlashListener`)
+- `resources/js/components/siagakita/` — Komponen bersama (`DisasterMap`, `MediaGallery`, `StatusBadge`, `EmptyState`, `FlashListener`)
 
 ---
 

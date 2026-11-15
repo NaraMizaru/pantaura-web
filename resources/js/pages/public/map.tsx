@@ -5,15 +5,28 @@ import {
     MapPin,
     Search,
     ShieldCheck,
+    Smartphone,
     Users,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { FloodMap } from '@/components/siagakita/flood-map';
+import { DisasterMap } from '@/components/siagakita/disaster-map';
 import { IncidentStatusBadge } from '@/components/siagakita/status-badge';
 import { EmptyState } from '@/components/siagakita/ui-states';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { DISASTER_TYPE_LABELS, DISASTER_TYPE_OPTIONS } from '@/lib/disaster';
 import type { Auth } from '@/types/auth';
 import type {
+    DisasterType,
+    DisasterTypeCounts,
     IncidentMarker,
     IncidentStatus,
     StatusCounts,
@@ -22,7 +35,9 @@ import type {
 type PublicMapProps = {
     incidents: IncidentMarker[];
     activeStatus: IncidentStatus | null;
+    activeType: DisasterType | null;
     statusCounts: StatusCounts;
+    typeCounts: DisasterTypeCounts;
 };
 
 const FILTER_OPTIONS: Array<{
@@ -67,7 +82,9 @@ function formatRelativeOrDate(iso: string | null): string {
 export default function PublicMap({
     incidents,
     activeStatus,
+    activeType,
     statusCounts,
+    typeCounts,
 }: PublicMapProps) {
     const { auth } = usePage<{ auth?: Auth }>().props;
     const [selectedId, setSelectedId] = useState<string | null>(
@@ -75,6 +92,7 @@ export default function PublicMap({
     );
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'newest' | 'most_reports'>('newest');
+    const [reportInfoOpen, setReportInfoOpen] = useState(false);
 
     const totalReportsCount = useMemo(
         () => incidents.reduce((sum, item) => sum + item.reports_count, 0),
@@ -100,11 +118,31 @@ export default function PublicMap({
     }, [incidents, searchQuery, sortBy]);
 
     const handleFilter = (statusKey: keyof StatusCounts) => {
-        router.get(
-            '/',
-            statusKey === 'all' ? {} : { status: statusKey },
-            { preserveState: true, replace: true },
-        );
+        const params: Record<string, string> = {};
+
+        if (statusKey !== 'all') {
+            params.status = statusKey;
+        }
+
+        if (activeType !== null) {
+            params.type = activeType;
+        }
+
+        router.get('/', params, { preserveState: true, replace: true });
+    };
+
+    const handleTypeFilter = (type: DisasterType | 'all') => {
+        const params: Record<string, string> = {};
+
+        if (activeStatus !== null) {
+            params.status = activeStatus;
+        }
+
+        if (type !== 'all') {
+            params.type = type;
+        }
+
+        router.get('/', params, { preserveState: true, replace: true });
     };
 
     const focusOnMap = (id: string) => {
@@ -116,7 +154,7 @@ export default function PublicMap({
 
     return (
         <>
-            <Head title="Peta Pemantauan Banjir Publik" />
+            <Head title="Peta Pemantauan Bencana Publik" />
             <div className="flex min-h-screen flex-col bg-[#f8f9ff] text-[#0b1c30]">
                 {/* Sticky Glass Header */}
                 <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-[#f8f9ff]/90 backdrop-blur-xl">
@@ -136,7 +174,7 @@ export default function PublicMap({
                                     SiagaKita
                                 </span>
                                 <span className="hidden text-xs text-[#3f4850] sm:block">
-                                    Pantauan Banjir &amp; Tanggap Bencana Publik
+                                    Pantauan Bencana &amp; Tanggap Darurat Publik
                                 </span>
                             </div>
                         </Link>
@@ -188,9 +226,46 @@ export default function PublicMap({
                     </div>
                 </header>
 
+                <section
+                    aria-label="Informasi pelaporan warga"
+                    className="border-b border-[#cfe6f7] bg-[#eff4ff]"
+                >
+                    <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-[#006194] ring-1 ring-[#cfe6f7]">
+                                <Smartphone
+                                    className="size-4"
+                                    aria-hidden="true"
+                                />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-[#0b1c30]">
+                                    Pelaporan warga dilakukan melalui aplikasi
+                                    mobile SiagaKita
+                                </p>
+                                <p className="text-xs text-[#3f4850]">
+                                    Web ini untuk pemantauan publik. Untuk
+                                    melaporkan bencana, daftar atau masuk di
+                                    aplikasi mobile lalu kirim lokasi dan bukti
+                                    foto/video. Halaman login di sini khusus
+                                    admin.
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => setReportInfoOpen(true)}
+                            className="shrink-0 bg-[#006194] text-white hover:bg-[#004b73]"
+                        >
+                            Cara Melapor
+                        </Button>
+                    </div>
+                </section>
+
                 {/* Live Telemetry Summary Bar */}
                 <section
-                    aria-label="Ringkasan data kejadian banjir"
+                    aria-label="Ringkasan data kejadian bencana"
                     className="border-b border-slate-200/80 bg-white"
                 >
                     <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
@@ -284,7 +359,7 @@ export default function PublicMap({
                     className="relative w-full bg-[#dce9ff]"
                 >
                     <h1 id="map-heading" className="sr-only">
-                        Peta Persebaran Insiden Banjir Publik
+                        Peta Persebaran Insiden Bencana Publik
                     </h1>
 
                     {/* Floating Status Filter Bar */}
@@ -334,7 +409,7 @@ export default function PublicMap({
                         </div>
                     </div>
 
-                    <FloodMap
+                    <DisasterMap
                         incidents={filteredIncidents}
                         selectedIncidentId={selectedId}
                         className="h-[460px] w-full sm:h-[540px] lg:h-[580px]"
@@ -361,7 +436,7 @@ export default function PublicMap({
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <span className="size-2.5 rounded-full bg-emerald-600" />
-                                    <span>Selesai / Surut</span>
+                                    <span>Selesai / Kondisi Pulih</span>
                                 </li>
                             </ul>
                         </div>
@@ -376,7 +451,7 @@ export default function PublicMap({
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <h2 className="text-xl font-bold tracking-tight text-[#0b1c30] sm:text-2xl">
-                                Daftar Kejadian Banjir Terpantau
+                                Daftar Kejadian Bencana Terpantau
                             </h2>
                             <p className="text-sm text-[#3f4850]">
                                 Menggabungkan beberapa laporan warga pada lokasi
@@ -420,6 +495,40 @@ export default function PublicMap({
 
                         <div className="flex items-center gap-2">
                             <label
+                                htmlFor="incident-type"
+                                className="text-xs font-semibold whitespace-nowrap text-[#3f4850]"
+                            >
+                                Jenis:
+                            </label>
+                            <select
+                                id="incident-type"
+                                value={activeType ?? 'all'}
+                                onChange={(e) =>
+                                    handleTypeFilter(
+                                        e.target.value as
+                                            | DisasterType
+                                            | 'all',
+                                    )
+                                }
+                                className="min-h-[42px] rounded-lg bg-[#eff4ff] px-3 py-2 text-sm font-medium text-[#0b1c30] focus:ring-2 focus:ring-[#0284c7] focus:outline-none"
+                            >
+                                <option value="all">
+                                    Semua Jenis ({typeCounts.all})
+                                </option>
+                                {DISASTER_TYPE_OPTIONS.map((option) => (
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
+                                        {option.label} (
+                                        {typeCounts[option.value]})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <label
                                 htmlFor="incident-sort"
                                 className="text-xs font-semibold whitespace-nowrap text-[#3f4850]"
                             >
@@ -449,7 +558,7 @@ export default function PublicMap({
                     {filteredIncidents.length === 0 ? (
                         <EmptyState
                             title="Tidak ada insiden ditemukan"
-                            description="Coba ubah kata kunci pencarian atau pilih filter status lainnya."
+                            description="Coba ubah kata kunci pencarian atau pilih filter status/jenis lainnya."
                         />
                     ) : (
                         <div className="grid gap-4 md:grid-cols-2">
@@ -470,9 +579,19 @@ export default function PublicMap({
                                         />
 
                                         <div className="flex flex-wrap items-center justify-between gap-2">
-                                            <IncidentStatusBadge
-                                                status={incident.status}
-                                            />
+                                            <div className="flex flex-wrap items-center gap-1.5">
+                                                <IncidentStatusBadge
+                                                    status={incident.status}
+                                                />
+                                                <span className="rounded-full bg-[#eff4ff] px-2.5 py-0.5 text-xs font-semibold text-[#004b73]">
+                                                    {
+                                                        DISASTER_TYPE_LABELS[
+                                                            incident
+                                                                .disaster_type
+                                                        ]
+                                                    }
+                                                </span>
+                                            </div>
                                             <span className="rounded-full bg-[#eff4ff] px-2.5 py-0.5 text-xs font-semibold text-[#004b73] tabular-nums">
                                                 {incident.reports_count} laporan
                                                 warga
@@ -537,9 +656,81 @@ export default function PublicMap({
                 </main>
 
                 <footer className="border-t border-slate-200 bg-white py-5 text-center text-xs text-[#3f4850]">
-                    SiagaKita — Platform Pelaporan &amp; Pemantauan Banjir
+                    SiagaKita — Platform Pelaporan &amp; Pemantauan Bencana
                     Berbasis Partisipasi Masyarakat
                 </footer>
+
+                <Dialog
+                    open={reportInfoOpen}
+                    onOpenChange={setReportInfoOpen}
+                >
+                    <DialogContent
+                        showCloseButton={false}
+                        className="bg-white text-[#0b1c30] shadow-xl ring-[#cfe6f7] sm:max-w-md"
+                    >
+                        <DialogHeader>
+                            <DialogTitle>Cara melapor bencana</DialogTitle>
+                            <DialogDescription className="text-[#3f4850]">
+                                Pelaporan warga dilakukan melalui aplikasi
+                                mobile SiagaKita. Web publik ini hanya untuk
+                                memantau insiden, sedangkan login di sini khusus
+                                admin.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <ol className="space-y-2.5 text-sm text-[#3f4850]">
+                            <li className="flex gap-2.5">
+                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
+                                    1
+                                </span>
+                                Buka aplikasi mobile SiagaKita di ponsel Anda.
+                            </li>
+                            <li className="flex gap-2.5">
+                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
+                                    2
+                                </span>
+                                Daftar akun warga atau masuk dengan email dan
+                                kata sandi Anda.
+                            </li>
+                            <li className="flex gap-2.5">
+                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
+                                    3
+                                </span>
+                                Pilih buat laporan, tentukan jenis bencana dan
+                                lokasi GPS kejadian.
+                            </li>
+                            <li className="flex gap-2.5">
+                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
+                                    4
+                                </span>
+                                Lampirkan foto/video bukti, lalu kirim laporan.
+                            </li>
+                            <li className="flex gap-2.5">
+                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
+                                    5
+                                </span>
+                                Pantau status verifikasi laporan di aplikasi
+                                atau pada peta publik ini.
+                            </li>
+                        </ol>
+
+                        <div className="rounded-lg bg-[#eff4ff] px-3 py-2.5 text-xs text-[#3f4850]">
+                            Bukti bahwa kondisi sudah pulih juga diajukan
+                            melalui aplikasi mobile, bukan dari halaman web ini.
+                        </div>
+
+                        <DialogFooter className="border-[#cfe6f7] bg-[#eff4ff]">
+                            <DialogClose asChild>
+                                <Button
+                                    type="button"
+                                    className="bg-[#006194] text-white hover:bg-[#004b73]"
+                                >
+                                    Mengerti
+                                </Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </>
     );

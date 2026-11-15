@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
 use App\Enums\ModerationStatus;
 use App\Models\Incident;
@@ -23,7 +24,7 @@ class ReportService
     ) {}
 
     /**
-     * @param  array{latitude: float, longitude: float, description: string, address?: string|null}  $data
+     * @param  array{latitude: float, longitude: float, description: string, address?: string|null, disaster_type?: DisasterType}  $data
      * @param  array<int, UploadedFile>  $files
      */
     public function createInitialReport(User $citizen, array $data, array $files): Report
@@ -33,12 +34,15 @@ class ReportService
         try {
             return DB::transaction(function () use ($citizen, $data, $storedMedia): Report {
                 $address = $data['address'] ?? null;
+                $disasterType = $data['disaster_type'] ?? DisasterType::Flood;
+                $prefix = $disasterType->titlePrefix();
                 $title = $address !== null && $address !== ''
-                    ? 'Banjir '.Str::limit($address, 60)
-                    : 'Laporan Banjir '.Str::limit($data['description'], 50);
+                    ? $prefix.' '.Str::limit($address, 60)
+                    : 'Laporan '.$prefix.' '.Str::limit($data['description'], 50);
 
                 $incident = Incident::create([
                     'title' => $title,
+                    'disaster_type' => $disasterType,
                     'description' => $data['description'],
                     'latitude' => $data['latitude'],
                     'longitude' => $data['longitude'],
@@ -183,6 +187,12 @@ class ReportService
 
         if ($targetIncident->status === IncidentStatus::Rejected) {
             throw new InvalidArgumentException('Tidak dapat mengelompokkan laporan ke insiden yang ditolak.');
+        }
+
+        $sourceIncident = $report->incident;
+
+        if ($sourceIncident !== null && $sourceIncident->disaster_type !== $targetIncident->disaster_type) {
+            throw new InvalidArgumentException('Laporan hanya dapat dikelompokkan ke insiden dengan jenis bencana yang sama.');
         }
 
         return DB::transaction(function () use ($report, $targetIncident, $admin): Report {

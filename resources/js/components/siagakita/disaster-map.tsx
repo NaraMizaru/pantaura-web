@@ -4,6 +4,7 @@ import L from 'leaflet';
 import { useMemo } from 'react';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { IncidentStatusBadge } from '@/components/siagakita/status-badge';
+import { DISASTER_TYPE_LABELS } from '@/lib/disaster';
 import type { IncidentMarker, IncidentStatus } from '@/types/siagakita';
 
 const STATUS_PIN_COLORS: Record<IncidentStatus, string> = {
@@ -27,7 +28,7 @@ function createIncidentIcon(status: IncidentStatus, count: number): L.DivIcon {
     });
 }
 
-type FloodMapProps = {
+type DisasterMapProps = {
     incidents: IncidentMarker[];
     selectedIncidentId?: string | null;
     className?: string;
@@ -35,13 +36,13 @@ type FloodMapProps = {
     detailBasePath?: string;
 };
 
-export function FloodMap({
+export function DisasterMap({
     incidents,
     selectedIncidentId = null,
     className = 'h-[420px] w-full rounded-lg border',
     zoom = 12,
     detailBasePath = '/incidents',
-}: FloodMapProps) {
+}: DisasterMapProps) {
     const center = useMemo<[number, number]>(() => {
         if (selectedIncidentId) {
             const found = incidents.find((i) => i.id === selectedIncidentId);
@@ -58,7 +59,7 @@ export function FloodMap({
     }, [incidents, selectedIncidentId]);
 
     return (
-        <div className={className} role="region" aria-label="Peta persebaran insiden banjir">
+        <div className={className} role="region" aria-label="Peta persebaran insiden bencana">
             <MapContainer
                 center={center}
                 zoom={zoom}
@@ -81,9 +82,16 @@ export function FloodMap({
                         <Popup minWidth={230}>
                             <div className="space-y-2 py-0.5">
                                 <div className="flex items-start justify-between gap-2">
-                                    <IncidentStatusBadge
-                                        status={incident.status}
-                                    />
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        <IncidentStatusBadge
+                                            status={incident.status}
+                                        />
+                                        <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-700">
+                                            {DISASTER_TYPE_LABELS[
+                                                incident.disaster_type
+                                            ] ?? incident.disaster_type_label}
+                                        </span>
+                                    </div>
                                     <span className="text-xs font-medium text-neutral-600">
                                         {incident.reports_count} laporan
                                     </span>

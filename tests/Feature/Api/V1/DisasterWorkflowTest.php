@@ -48,7 +48,9 @@ test('citizen can create flood report with media and submit additional report', 
 
     $createResponse->assertCreated()
         ->assertJsonPath('data.moderation_status', 'pending')
-        ->assertJsonPath('data.incident.status', IncidentStatus::Unverified->value);
+        ->assertJsonPath('data.incident.status', IncidentStatus::Unverified->value)
+        ->assertJsonPath('data.incident.disaster_type', 'flood')
+        ->assertJsonPath('data.incident.disaster_type_label', 'Banjir');
 
     $incidentId = $createResponse->json('data.incident_id');
 
@@ -72,6 +74,57 @@ test('citizen can create flood report with media and submit additional report', 
         ->getJson('/api/v1/reports/my')
         ->assertOk()
         ->assertJsonCount(2, 'data');
+});
+
+test('citizen can create a typed disaster report and filter incidents by type', function () {
+    Storage::fake('public');
+
+    $citizen = User::factory()->create();
+    $token = $citizen->createToken('test')->plainTextToken;
+
+    $response = $this->withToken($token)->post('/api/v1/reports', [
+        'disaster_type' => 'earthquake',
+        'latitude' => -6.1954,
+        'longitude' => 106.8321,
+        'address' => 'Menteng, Jakarta Pusat',
+        'description' => 'Getaran gempa terasa kuat selama beberapa detik.',
+        'media' => [
+            UploadedFile::fake()->image('gempa.jpg', 800, 600),
+        ],
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('data.incident.disaster_type', 'earthquake')
+        ->assertJsonPath('data.incident.disaster_type_label', 'Gempa Bumi');
+
+    $incidentId = $response->json('data.incident_id');
+
+    $this->getJson('/api/v1/incidents/map?type=earthquake')
+        ->assertOk()
+        ->assertJsonFragment(['id' => $incidentId]);
+
+    $this->getJson('/api/v1/incidents/map?type=flood')
+        ->assertOk()
+        ->assertJsonMissing(['id' => $incidentId]);
+
+    $this->getJson('/api/v1/incidents?type=earthquake')
+        ->assertOk()
+        ->assertJsonFragment(['id' => $incidentId]);
+});
+
+test('invalid disaster type is rejected', function () {
+    $citizen = User::factory()->create();
+    $token = $citizen->createToken('test')->plainTextToken;
+
+    $this->withToken($token)
+        ->postJson('/api/v1/reports', [
+            'disaster_type' => 'tsunami',
+            'latitude' => -6.2088,
+            'longitude' => 106.8456,
+            'description' => 'Jenis bencana tidak dikenal harus ditolak.',
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['disaster_type']);
 });
 
 test('report creation requires valid media evidence', function () {

@@ -6,10 +6,11 @@ import {
     Layers,
     MapPin,
     Share2,
+    Smartphone,
     Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { FloodMap } from '@/components/siagakita/flood-map';
+import { DisasterMap } from '@/components/siagakita/disaster-map';
 import { MediaGallery } from '@/components/siagakita/media-gallery';
 import {
     IncidentStatusBadge,
@@ -20,6 +21,7 @@ import { EmptyState } from '@/components/siagakita/ui-states';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type {
+    DisasterType,
     IncidentStatus,
     MediaItem,
     ModerationStatus,
@@ -30,6 +32,8 @@ type IncidentDetailProps = {
     incident: {
         id: string;
         title: string;
+        disaster_type: DisasterType;
+        disaster_type_label: string;
         description: string;
         latitude: number;
         longitude: number;
@@ -174,6 +178,9 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                             <div className="flex flex-wrap items-center gap-2">
                                 <IncidentStatusBadge status={incident.status} />
                                 <span className="rounded-full bg-[#e5eeff] px-2.5 py-0.5 text-xs font-semibold text-[#004b73]">
+                                    {incident.disaster_type_label}
+                                </span>
+                                <span className="rounded-full bg-[#e5eeff] px-2.5 py-0.5 text-xs font-semibold text-[#004b73]">
                                     {incident.reports_count} Laporan Warga
                                 </span>
                             </div>
@@ -236,7 +243,7 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                             </div>
                             <div className="rounded-lg bg-[#eff4ff] p-3.5">
                                 <p className="text-[11px] font-bold tracking-wider text-[#3f4850] uppercase">
-                                    Selesai / Surut
+                                    Selesai / Kondisi Pulih
                                 </p>
                                 <p className="mt-1 text-xs font-semibold text-[#0b1c30]">
                                     {formatDateTime(incident.resolved_at)}
@@ -270,6 +277,21 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                                         kejadian agar peta tetap akurat.
                                     </p>
                                 </div>
+                            </div>
+
+                            <div className="flex items-start gap-3 rounded-xl border border-[#cfe6f7] bg-[#eff4ff] px-4 py-3">
+                                <Smartphone
+                                    className="mt-0.5 size-4 shrink-0 text-[#006194]"
+                                    aria-hidden="true"
+                                />
+                                <p className="text-xs text-[#3f4850]">
+                                    <span className="font-semibold text-[#0b1c30]">
+                                        Ingin ikut melapor?
+                                    </span>{' '}
+                                    Laporan tambahan dan bukti kondisi pulih
+                                    dikirim melalui aplikasi mobile SiagaKita.
+                                    Web ini hanya untuk pemantauan publik.
+                                </p>
                             </div>
 
                             <section className="space-y-3">
@@ -403,11 +425,15 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <FloodMap
+                                    <DisasterMap
                                         incidents={[
                                             {
                                                 id: incident.id,
                                                 title: incident.title,
+                                                disaster_type:
+                                                    incident.disaster_type,
+                                                disaster_type_label:
+                                                    incident.disaster_type_label,
                                                 description:
                                                     incident.description,
                                                 latitude: incident.latitude,

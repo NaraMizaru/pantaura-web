@@ -21,6 +21,8 @@ class IncidentResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
+            'disaster_type' => $this->disaster_type->value,
+            'disaster_type_label' => $this->disaster_type->label(),
             'description' => $this->description,
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,

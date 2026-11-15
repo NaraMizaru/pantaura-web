@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
 use App\Enums\ModerationStatus;
 use App\Enums\ResolutionStatus;
@@ -72,6 +73,36 @@ test('admin can verify report, reject report, and group duplicate report into ne
 
     expect($spamReport->fresh()->moderation_status)->toBe(ModerationStatus::Rejected)
         ->and($spamIncident->fresh()->status)->toBe(IncidentStatus::Rejected);
+});
+
+test('admin cannot group a report into an incident of a different disaster type', function () {
+    $admin = User::factory()->admin()->create();
+
+    $floodIncident = Incident::factory()->create([
+        'latitude' => -6.2088,
+        'longitude' => 106.8456,
+        'status' => IncidentStatus::Unverified,
+    ]);
+
+    $earthquakeIncident = Incident::factory()->ofType(DisasterType::Earthquake)->create([
+        'latitude' => -6.2090,
+        'longitude' => 106.8458,
+        'status' => IncidentStatus::Unverified,
+    ]);
+    $earthquakeReport = Report::factory()->create([
+        'incident_id' => $earthquakeIncident->id,
+        'latitude' => -6.2090,
+        'longitude' => 106.8458,
+    ]);
+
+    $this->actingAs($admin)
+        ->post("/admin/reports/{$earthquakeReport->id}/group", [
+            'target_incident_id' => $floodIncident->id,
+        ])
+        ->assertSessionHas('error');
+
+    expect($earthquakeReport->fresh()->incident_id)->toBe($earthquakeIncident->id)
+        ->and(Incident::find($earthquakeIncident->id))->not->toBeNull();
 });
 
 test('admin can approve and reject resolution submissions with status history', function () {

@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, MapPin } from 'lucide-react';
-import { FloodMap } from '@/components/siagakita/flood-map';
+import { DisasterMap } from '@/components/siagakita/disaster-map';
 import { MediaGallery } from '@/components/siagakita/media-gallery';
 import {
     IncidentStatusBadge,
@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type {
+    DisasterType,
     IncidentStatus,
     MediaItem,
     ModerationStatus,
@@ -20,6 +21,8 @@ type AdminIncidentShowProps = {
     incident: {
         id: string;
         title: string;
+        disaster_type: DisasterType;
+        disaster_type_label: string;
         description: string;
         latitude: number;
         longitude: number;
@@ -74,7 +77,12 @@ export default function AdminIncidentShow({
                             Kembali ke Insiden
                         </Link>
                     </Button>
-                    <IncidentStatusBadge status={incident.status} />
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-foreground">
+                            {incident.disaster_type_label}
+                        </span>
+                        <IncidentStatusBadge status={incident.status} />
+                    </div>
                 </div>
 
                 <div className="space-y-2">
@@ -95,11 +103,14 @@ export default function AdminIncidentShow({
                     )}
                 </div>
 
-                <FloodMap
+                <DisasterMap
                     incidents={[
                         {
                             id: incident.id,
                             title: incident.title,
+                            disaster_type: incident.disaster_type,
+                            disaster_type_label:
+                                incident.disaster_type_label,
                             description: incident.description,
                             latitude: incident.latitude,
                             longitude: incident.longitude,

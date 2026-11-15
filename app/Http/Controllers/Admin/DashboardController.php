@@ -73,6 +73,8 @@ class DashboardController extends Controller
             ->map(fn (Incident $incident): array => [
                 'id' => $incident->id,
                 'title' => $incident->title,
+                'disaster_type' => $incident->disaster_type->value,
+                'disaster_type_label' => $incident->disaster_type->label(),
                 'description' => $incident->description,
                 'latitude' => $incident->latitude,
                 'longitude' => $incident->longitude,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
 use App\Models\Incident;
 use App\Models\IncidentStatusHistory;
@@ -24,6 +25,7 @@ class IncidentService
         float $latitude,
         float $longitude,
         ?string $excludeIncidentId = null,
+        ?DisasterType $type = null,
         float $radiusKm = 1.5,
         int $hoursWindow = 72,
     ): Collection {
@@ -34,6 +36,7 @@ class IncidentService
             ->publiclyVisible()
             ->where('status', '!=', IncidentStatus::Resolved->value)
             ->when($excludeIncidentId !== null, fn ($q) => $q->where('id', '!=', $excludeIncidentId))
+            ->when($type !== null, fn ($q) => $q->where('disaster_type', $type->value))
             ->whereBetween('latitude', [$latitude - $latDelta, $latitude + $latDelta])
             ->whereBetween('longitude', [$longitude - $lngDelta, $longitude + $lngDelta])
             ->where('created_at', '>=', now()->subHours($hoursWindow))

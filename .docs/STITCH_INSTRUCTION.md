@@ -10,7 +10,7 @@ ID: 3303901776914113215
 1. SiagaKita PRD Summary
     ID: 86c42478eabd43df96a8890f5d6721ef
 
-2. Peta Pantauan Insiden Banjir Publik
+2. Peta Pantauan Insiden Bencana Publik
     ID: 2f90099374da4fcfa7edaa798e6ef0c5
 
 3. Daftar Kejadian Terkini & Status Filter

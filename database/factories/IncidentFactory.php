@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
 use App\Models\Incident;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -17,6 +18,7 @@ class IncidentFactory extends Factory
     {
         return [
             'title' => 'Genangan Air '.fake()->streetName(),
+            'disaster_type' => DisasterType::Flood,
             'description' => fake()->sentence(12),
             'latitude' => fake()->latitude(-6.28, -6.12),
             'longitude' => fake()->longitude(106.75, 106.92),
@@ -30,6 +32,13 @@ class IncidentFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => IncidentStatus::Verified,
             'verified_at' => now(),
+        ]);
+    }
+
+    public function ofType(DisasterType $type): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'disaster_type' => $type,
         ]);
     }
 

@@ -3,11 +3,18 @@ import { IncidentStatusBadge } from '@/components/siagakita/status-badge';
 import { EmptyState } from '@/components/siagakita/ui-states';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import type { IncidentStatus, PaginatedData } from '@/types/siagakita';
+import { DISASTER_TYPE_OPTIONS } from '@/lib/disaster';
+import type {
+    DisasterType,
+    IncidentStatus,
+    PaginatedData,
+} from '@/types/siagakita';
 
 type IncidentRow = {
     id: string;
     title: string;
+    disaster_type: DisasterType;
+    disaster_type_label: string;
     address: string | null;
     status: IncidentStatus;
     reports_count: number;
@@ -18,6 +25,7 @@ type IncidentRow = {
 type IncidentsIndexProps = {
     incidents: PaginatedData<IncidentRow>;
     activeStatus: IncidentStatus | null;
+    activeType: DisasterType | null;
 };
 
 const STATUS_FILTERS: Array<{ key: IncidentStatus | 'all'; label: string }> = [
@@ -32,54 +40,103 @@ const STATUS_FILTERS: Array<{ key: IncidentStatus | 'all'; label: string }> = [
 export default function AdminIncidentsIndex({
     incidents,
     activeStatus,
+    activeType,
 }: IncidentsIndexProps) {
+    const buildParams = (status: IncidentStatus | 'all', type: DisasterType | 'all') => {
+        const params: Record<string, string> = {};
+
+        if (status !== 'all') {
+            params.status = status;
+        }
+
+        if (type !== 'all') {
+            params.type = type;
+        }
+
+        return params;
+    };
+
     const handleFilter = (key: IncidentStatus | 'all') => {
+        router.get('/admin/incidents', buildParams(key, activeType ?? 'all'), {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleTypeFilter = (type: DisasterType | 'all') => {
         router.get(
             '/admin/incidents',
-            key === 'all' ? {} : { status: key },
+            buildParams(activeStatus ?? 'all', type),
             { preserveState: true, replace: true },
         );
     };
 
     return (
         <>
-            <Head title="Insiden Banjir" />
+            <Head title="Insiden Bencana" />
             <div className="flex flex-col gap-6 p-4 md:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">
-                            Daftar Insiden Banjir
+                            Daftar Insiden Bencana
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Kelola titik kejadian banjir beserta gabungan
+                            Kelola titik kejadian bencana beserta gabungan
                             laporan warga.
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5">
-                        {STATUS_FILTERS.map((f) => {
-                            const active =
-                                (f.key === 'all' && activeStatus === null) ||
-                                f.key === activeStatus;
-                            return (
-                                <Button
-                                    key={f.key}
-                                    type="button"
-                                    size="sm"
-                                    variant={active ? 'default' : 'outline'}
-                                    onClick={() => handleFilter(f.key)}
-                                >
-                                    {f.label}
-                                </Button>
-                            );
-                        })}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <label
+                            htmlFor="incident-type-filter"
+                            className="text-xs font-semibold whitespace-nowrap text-muted-foreground"
+                        >
+                            Jenis:
+                        </label>
+                        <select
+                            id="incident-type-filter"
+                            value={activeType ?? 'all'}
+                            onChange={(e) =>
+                                handleTypeFilter(
+                                    e.target.value as DisasterType | 'all',
+                                )
+                            }
+                            className="min-h-[36px] rounded-md border bg-background px-2.5 py-1.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                            <option value="all">Semua Jenis</option>
+                            {DISASTER_TYPE_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+
+                        <div className="flex flex-wrap gap-1.5">
+                            {STATUS_FILTERS.map((f) => {
+                                const active =
+                                    (f.key === 'all' &&
+                                        activeStatus === null) ||
+                                    f.key === activeStatus;
+                                return (
+                                    <Button
+                                        key={f.key}
+                                        type="button"
+                                        size="sm"
+                                        variant={active ? 'default' : 'outline'}
+                                        onClick={() => handleFilter(f.key)}
+                                    >
+                                        {f.label}
+                                    </Button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
 
                 {incidents.data.length === 0 ? (
                     <EmptyState
                         title="Belum ada insiden"
-                        description="Tidak ada insiden banjir yang sesuai dengan filter saat ini."
+                        description="Tidak ada insiden bencana yang sesuai dengan filter saat ini."
                     />
                 ) : (
                     <Card>
@@ -110,6 +167,11 @@ export default function AdminIncidentsIndex({
                                             <td className="px-4 py-3">
                                                 <p className="font-medium">
                                                     {incident.title}
+                                                </p>
+                                                <p className="text-xs font-medium text-muted-foreground">
+                                                    {
+                                                        incident.disaster_type_label
+                                                    }
                                                 </p>
                                                 {incident.address && (
                                                     <p className="text-xs text-muted-foreground">
