@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [IncidentMapController::class, 'index'])->name('home');
 Route::get('/incidents/{incident}', [IncidentMapController::class, 'show'])->name('incidents.show');
+Route::view('/api/docs', 'api-docs')->name('api.docs');
 
 Route::middleware(['auth', 'verified'])->get('/dashboard', function (Request $request) {
     if ($request->user()?->isAdmin()) {
