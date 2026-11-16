@@ -58,7 +58,7 @@ class DummyDataSeeder extends Seeder
             ],
         );
 
-        $verifiedIncident = Incident::factory()->verified()->create([
+        $verifiedIncident = Incident::factory()->ofType(DisasterType::Flood)->verified()->create([
             'title' => 'Banjir Jl. Ahmad Yani Depan Halte',
             'description' => 'Ketinggian air sekitar 45 cm menggenangi dua lajur jalan utama.',
             'latitude' => -6.2088000,
@@ -109,7 +109,7 @@ class DummyDataSeeder extends Seeder
             'created_at' => now()->subHours(2),
         ]);
 
-        $nearbyDuplicateIncident = Incident::factory()->create([
+        $nearbyDuplicateIncident = Incident::factory()->ofType(DisasterType::Flood)->create([
             'title' => 'Genangan Dekat Halte Ahmad Yani',
             'description' => 'Air mulai menggenangi trotoar di sisi timur Jl. Ahmad Yani.',
             'latitude' => -6.2094000,
@@ -164,7 +164,7 @@ class DummyDataSeeder extends Seeder
         ];
 
         foreach ($unverifiedPoints as $point) {
-            $inc = Incident::factory()->create([
+            $inc = Incident::factory()->ofType(DisasterType::Flood)->create([
                 'title' => $point['title'],
                 'description' => $point['description'],
                 'latitude' => $point['latitude'],
@@ -246,7 +246,7 @@ class DummyDataSeeder extends Seeder
             'reviewed_at' => now()->subHours(9),
         ]);
 
-        $resolutionPendingIncident = Incident::factory()->create([
+        $resolutionPendingIncident = Incident::factory()->ofType(DisasterType::Flood)->create([
             'title' => 'Banjir Kawasan Kampung Melayu',
             'description' => 'Genangan sempat mencapai 60 cm di area permukiman.',
             'latitude' => -6.2244000,
@@ -276,7 +276,7 @@ class DummyDataSeeder extends Seeder
             'status' => ResolutionStatus::Pending,
         ]);
 
-        $resolvedIncident = Incident::factory()->resolved()->create([
+        $resolvedIncident = Incident::factory()->ofType(DisasterType::Flood)->resolved()->create([
             'title' => 'Genangan Underpass Dukuh Atas',
             'description' => 'Sempat terjadi genangan 25 cm di jalur lambat.',
             'latitude' => -6.2008000,

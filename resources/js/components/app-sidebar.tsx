@@ -34,7 +34,7 @@ const mainNavItems: NavItem[] = [
         icon: FileWarning,
     },
     {
-        title: 'Insiden Banjir',
+        title: 'Insiden',
         href: '/admin/incidents',
         icon: MapPin,
     },
