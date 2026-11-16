@@ -10,14 +10,14 @@ import {
     Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { DisasterMap } from '@/components/siagakita/disaster-map';
-import { MediaGallery } from '@/components/siagakita/media-gallery';
+import { DisasterMap } from '@/features/incidents/components/DisasterMap';
+import { MediaGallery } from '@/features/incidents/components/MediaGallery';
 import {
     IncidentStatusBadge,
     ModerationStatusBadge,
     ResolutionStatusBadge,
-} from '@/components/siagakita/status-badge';
-import { EmptyState } from '@/components/siagakita/ui-states';
+} from '@/features/incidents/components/StatusBadge';
+import { EmptyState } from '@/features/incidents/components/UiStates';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type {
@@ -129,7 +129,7 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                             asChild
                             variant="outline"
                             size="sm"
-                            className="border-slate-300 bg-white text-[#0b1c30] hover:bg-[#eff4ff]"
+                            className="border-slate-300 bg-white text-[#0b1c30] hover:bg-[#eff4ff] hover:text-[#0b1c30] dark:border-slate-300 dark:bg-white dark:text-[#0b1c30] dark:hover:bg-[#eff4ff] dark:hover:text-[#0b1c30]"
                         >
                             <Link href="/">
                                 <ArrowLeft
@@ -160,7 +160,7 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                             size="sm"
                             variant="outline"
                             onClick={handleShare}
-                            className="h-8 border-slate-300 bg-white text-xs text-[#0b1c30] hover:bg-[#dce9ff]"
+                            className="h-8 border-slate-300 bg-white text-xs text-[#0b1c30] hover:bg-[#dce9ff] hover:text-[#0b1c30] dark:border-slate-300 dark:bg-white dark:text-[#0b1c30] dark:hover:bg-[#dce9ff] dark:hover:text-[#0b1c30]"
                         >
                             <Share2
                                 className="mr-1.5 size-3.5"

@@ -2,8 +2,8 @@ import { Head, Link, router } from '@inertiajs/react';
 import {
     IncidentStatusBadge,
     ModerationStatusBadge,
-} from '@/components/siagakita/status-badge';
-import { EmptyState } from '@/components/siagakita/ui-states';
+} from '@/features/incidents/components/StatusBadge';
+import { EmptyState } from '@/features/incidents/components/UiStates';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type {

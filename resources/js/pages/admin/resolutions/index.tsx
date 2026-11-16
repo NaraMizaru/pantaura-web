@@ -1,12 +1,12 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Check, X } from 'lucide-react';
 import { useState } from 'react';
-import { MediaGallery } from '@/components/siagakita/media-gallery';
+import { MediaGallery } from '@/features/incidents/components/MediaGallery';
 import {
     IncidentStatusBadge,
     ResolutionStatusBadge,
-} from '@/components/siagakita/status-badge';
-import { EmptyState } from '@/components/siagakita/ui-states';
+} from '@/features/incidents/components/StatusBadge';
+import { EmptyState } from '@/features/incidents/components/UiStates';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {

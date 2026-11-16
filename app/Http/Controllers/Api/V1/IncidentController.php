@@ -18,14 +18,20 @@ class IncidentController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $statusFilter = $request->query('status');
+        $activeStatus = is_string($statusFilter)
+            && IncidentStatus::tryFrom($statusFilter) !== null
+            && $statusFilter !== IncidentStatus::Rejected->value
+            ? $statusFilter
+            : null;
         $typeFilter = $request->query('type');
         $activeType = is_string($typeFilter) ? DisasterType::tryFrom($typeFilter) : null;
 
         $incidents = Incident::query()
             ->publiclyVisible()
             ->when(
-                is_string($statusFilter) && IncidentStatus::tryFrom($statusFilter) !== null && $statusFilter !== IncidentStatus::Rejected->value,
-                fn ($q) => $q->where('status', $statusFilter)
+                $activeStatus !== null,
+                fn ($q) => $q->where('status', $activeStatus),
+                fn ($q) => $q->where('status', '!=', IncidentStatus::Resolved->value)
             )
             ->when($activeType !== null, fn ($q) => $q->where('disaster_type', $activeType->value))
             ->withCount('reports')
@@ -38,14 +44,20 @@ class IncidentController extends Controller
     public function map(Request $request): JsonResponse
     {
         $statusFilter = $request->query('status');
+        $activeStatus = is_string($statusFilter)
+            && IncidentStatus::tryFrom($statusFilter) !== null
+            && $statusFilter !== IncidentStatus::Rejected->value
+            ? $statusFilter
+            : null;
         $typeFilter = $request->query('type');
         $activeType = is_string($typeFilter) ? DisasterType::tryFrom($typeFilter) : null;
 
         $incidents = Incident::query()
             ->publiclyVisible()
             ->when(
-                is_string($statusFilter) && IncidentStatus::tryFrom($statusFilter) !== null && $statusFilter !== IncidentStatus::Rejected->value,
-                fn ($q) => $q->where('status', $statusFilter)
+                $activeStatus !== null,
+                fn ($q) => $q->where('status', $activeStatus),
+                fn ($q) => $q->where('status', '!=', IncidentStatus::Resolved->value)
             )
             ->when($activeType !== null, fn ($q) => $q->where('disaster_type', $activeType->value))
             ->withCount('reports')

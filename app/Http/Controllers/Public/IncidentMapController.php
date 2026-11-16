@@ -28,7 +28,11 @@ class IncidentMapController extends Controller
 
         $incidents = Incident::query()
             ->publiclyVisible()
-            ->when($activeStatus !== null, fn ($q) => $q->where('status', $activeStatus))
+            ->when(
+                $activeStatus !== null,
+                fn ($q) => $q->where('status', $activeStatus),
+                fn ($q) => $q->where('status', '!=', IncidentStatus::Resolved->value)
+            )
             ->when($activeType !== null, fn ($q) => $q->where('disaster_type', $activeType->value))
             ->withCount('reports')
             ->latest()
@@ -57,21 +61,28 @@ class IncidentMapController extends Controller
 
         $typeCounts = Incident::query()
             ->publiclyVisible()
-            ->when($activeStatus !== null, fn ($q) => $q->where('status', $activeStatus))
+            ->when(
+                $activeStatus !== null,
+                fn ($q) => $q->where('status', $activeStatus),
+                fn ($q) => $q->where('status', '!=', IncidentStatus::Resolved->value)
+            )
             ->selectRaw('disaster_type, count(*) as total')
             ->groupBy('disaster_type')
             ->pluck('total', 'disaster_type');
+
+        $resolvedCount = (int) ($statusCounts[IncidentStatus::Resolved->value] ?? 0);
+        $activeCount = (int) $statusCounts->sum() - $resolvedCount;
 
         return Inertia::render('public/map', [
             'incidents' => $incidents,
             'activeStatus' => $activeStatus,
             'activeType' => $activeType?->value,
             'statusCounts' => [
-                'all' => $statusCounts->sum(),
+                'all' => $activeCount,
                 'unverified' => (int) ($statusCounts[IncidentStatus::Unverified->value] ?? 0),
                 'verified' => (int) ($statusCounts[IncidentStatus::Verified->value] ?? 0),
                 'resolution_submitted' => (int) ($statusCounts[IncidentStatus::ResolutionSubmitted->value] ?? 0),
-                'resolved' => (int) ($statusCounts[IncidentStatus::Resolved->value] ?? 0),
+                'resolved' => $resolvedCount,
             ],
             'typeCounts' => [
                 'all' => $typeCounts->sum(),

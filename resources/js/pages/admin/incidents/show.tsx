@@ -1,12 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, MapPin } from 'lucide-react';
-import { DisasterMap } from '@/components/siagakita/disaster-map';
-import { MediaGallery } from '@/components/siagakita/media-gallery';
+import { DisasterMap } from '@/features/incidents/components/DisasterMap';
+import { MediaGallery } from '@/features/incidents/components/MediaGallery';
 import {
     IncidentStatusBadge,
     ModerationStatusBadge,
     ResolutionStatusBadge,
-} from '@/components/siagakita/status-badge';
+} from '@/features/incidents/components/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type {

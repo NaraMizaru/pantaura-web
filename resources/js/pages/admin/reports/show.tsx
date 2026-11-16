@@ -1,13 +1,13 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, Check, Layers, X } from 'lucide-react';
 import { useState } from 'react';
-import { DisasterMap } from '@/components/siagakita/disaster-map';
-import { MediaGallery } from '@/components/siagakita/media-gallery';
+import { DisasterMap } from '@/features/incidents/components/DisasterMap';
+import { MediaGallery } from '@/features/incidents/components/MediaGallery';
 import {
     IncidentStatusBadge,
     ModerationStatusBadge,
-} from '@/components/siagakita/status-badge';
-import { EmptyState } from '@/components/siagakita/ui-states';
+} from '@/features/incidents/components/StatusBadge';
+import { EmptyState } from '@/features/incidents/components/UiStates';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {

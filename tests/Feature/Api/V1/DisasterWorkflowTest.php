@@ -165,3 +165,28 @@ test('citizen can submit resolution evidence for verified incident and rejected 
 
     expect($verifiedIncident->fresh()->status)->toBe(IncidentStatus::ResolutionSubmitted);
 });
+
+test('resolved incidents are hidden from default public map and list unless filtered by status=resolved', function () {
+    $activeIncident = Incident::factory()->verified()->create();
+    $resolvedIncident = Incident::factory()->resolved()->create();
+
+    $this->getJson('/api/v1/incidents/map')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $activeIncident->id);
+
+    $this->getJson('/api/v1/incidents/map?status=resolved')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $resolvedIncident->id);
+
+    $this->getJson('/api/v1/incidents')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $activeIncident->id);
+
+    $this->getJson('/api/v1/incidents?status=resolved')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $resolvedIncident->id);
+});

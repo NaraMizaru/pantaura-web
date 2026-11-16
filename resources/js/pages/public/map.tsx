@@ -1,28 +1,15 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import {
-    Droplets,
-    Layers,
-    MapPin,
-    Search,
-    ShieldCheck,
-    Smartphone,
-    Users,
-} from 'lucide-react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { Search, Smartphone } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { DisasterMap } from '@/components/siagakita/disaster-map';
-import { IncidentStatusBadge } from '@/components/siagakita/status-badge';
-import { EmptyState } from '@/components/siagakita/ui-states';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { DISASTER_TYPE_LABELS, DISASTER_TYPE_OPTIONS } from '@/lib/disaster';
+import { DisasterMap } from '@/features/incidents/components/DisasterMap';
+import { EmptyState } from '@/features/incidents/components/UiStates';
+import { DISASTER_TYPE_OPTIONS } from '@/features/incidents/lib/disaster';
+import { IncidentCard } from '@/features/public-map/components/IncidentCard';
+import { PublicHeader } from '@/features/public-map/components/PublicHeader';
+import { ReportInfoDialog } from '@/features/public-map/components/ReportInfoDialog';
+import { StatusFilterBar } from '@/features/public-map/components/StatusFilterBar';
+import { TelemetrySummaryBar } from '@/features/public-map/components/TelemetrySummaryBar';
 import type { Auth } from '@/types/auth';
 import type {
     DisasterType,
@@ -40,45 +27,6 @@ type PublicMapProps = {
     typeCounts: DisasterTypeCounts;
 };
 
-const FILTER_OPTIONS: Array<{
-    key: keyof StatusCounts;
-    label: string;
-    dotColor?: string;
-}> = [
-    { key: 'all', label: 'Semua Titik' },
-    {
-        key: 'unverified',
-        label: 'Belum Diverifikasi',
-        dotColor: 'bg-amber-500',
-    },
-    { key: 'verified', label: 'Terverifikasi', dotColor: 'bg-red-500' },
-    {
-        key: 'resolution_submitted',
-        label: 'Pengajuan Selesai',
-        dotColor: 'bg-indigo-500',
-    },
-    { key: 'resolved', label: 'Selesai', dotColor: 'bg-emerald-500' },
-];
-
-const STATUS_STRIPE_COLOR: Record<IncidentStatus, string> = {
-    unverified: 'bg-amber-500',
-    verified: 'bg-red-500',
-    resolution_submitted: 'bg-indigo-500',
-    resolved: 'bg-emerald-500',
-    rejected: 'bg-neutral-400',
-};
-
-function formatRelativeOrDate(iso: string | null): string {
-    if (!iso) {
-        return '-';
-    }
-
-    return new Intl.DateTimeFormat('id-ID', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    }).format(new Date(iso));
-}
-
 export default function PublicMap({
     incidents,
     activeStatus,
@@ -90,6 +38,7 @@ export default function PublicMap({
     const [selectedId, setSelectedId] = useState<string | null>(
         incidents[0]?.id ?? null,
     );
+    const [focusTrigger, setFocusTrigger] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'newest' | 'most_reports'>('newest');
     const [reportInfoOpen, setReportInfoOpen] = useState(false);
@@ -147,6 +96,7 @@ export default function PublicMap({
 
     const focusOnMap = (id: string) => {
         setSelectedId(id);
+        setFocusTrigger((prev) => prev + 1);
         document
             .getElementById('peta-pantauan')
             ?.scrollIntoView({ behavior: 'smooth' });
@@ -156,75 +106,7 @@ export default function PublicMap({
         <>
             <Head title="Peta Pemantauan Bencana Publik" />
             <div className="flex min-h-screen flex-col bg-[#f8f9ff] text-[#0b1c30]">
-                {/* Sticky Glass Header */}
-                <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-[#f8f9ff]/90 backdrop-blur-xl">
-                    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-                        <Link
-                            href="/"
-                            className="flex items-center gap-2.5 focus-visible:ring-2 focus-visible:ring-[#0284c7] focus-visible:outline-none"
-                        >
-                            <span className="flex size-9 items-center justify-center rounded-lg bg-[#006194] text-white shadow-xs">
-                                <Droplets
-                                    className="size-5"
-                                    aria-hidden="true"
-                                />
-                            </span>
-                            <div>
-                                <span className="block text-base font-bold tracking-tight text-[#006194]">
-                                    SiagaKita
-                                </span>
-                                <span className="hidden text-xs text-[#3f4850] sm:block">
-                                    Pantauan Bencana &amp; Tanggap Darurat Publik
-                                </span>
-                            </div>
-                        </Link>
-
-                        <nav
-                            aria-label="Navigasi utama"
-                            className="hidden items-center gap-1 md:flex"
-                        >
-                            <a
-                                href="#peta-pantauan"
-                                className="rounded-lg bg-[#007bb9] px-3 py-1.5 text-sm font-semibold text-white shadow-xs"
-                            >
-                                Peta Pantauan
-                            </a>
-                            <a
-                                href="#daftar-kejadian"
-                                className="rounded-lg px-3 py-1.5 text-sm font-medium text-[#3f4850] transition-colors hover:bg-[#e5eeff] hover:text-[#0b1c30]"
-                            >
-                                Daftar Kejadian
-                            </a>
-                        </nav>
-
-                        <div className="flex items-center gap-2">
-                            {auth?.user?.role === 'admin' ? (
-                                <Button
-                                    asChild
-                                    size="sm"
-                                    className="bg-[#006194] text-white hover:bg-[#004b73]"
-                                >
-                                    <Link href="/admin">
-                                        <ShieldCheck
-                                            className="mr-1.5 size-4"
-                                            aria-hidden="true"
-                                        />
-                                        Dashboard Admin
-                                    </Link>
-                                </Button>
-                            ) : (
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    size="sm"
-                                    className="border-slate-300 bg-white text-[#0b1c30] hover:bg-[#eff4ff]"
-                                >
-                                    <Link href="/login">Masuk Admin</Link>
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-                </header>
+                <PublicHeader auth={auth} />
 
                 <section
                     aria-label="Informasi pelaporan warga"
@@ -263,96 +145,12 @@ export default function PublicMap({
                     </div>
                 </section>
 
-                {/* Live Telemetry Summary Bar */}
-                <section
-                    aria-label="Ringkasan data kejadian bencana"
-                    className="border-b border-slate-200/80 bg-white"
-                >
-                    <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
-                        <div className="flex flex-wrap items-center gap-5 sm:gap-7">
-                            <div className="flex items-center gap-2.5">
-                                <div className="flex size-9 items-center justify-center rounded-lg bg-[#e5eeff] text-[#006194]">
-                                    <Layers
-                                        className="size-4"
-                                        aria-hidden="true"
-                                    />
-                                </div>
-                                <div>
-                                    <p className="text-lg leading-none font-bold tabular-nums">
-                                        {statusCounts.all}
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-[#3f4850]">
-                                        Titik Insiden
-                                    </p>
-                                </div>
-                            </div>
+                <TelemetrySummaryBar
+                    statusCounts={statusCounts}
+                    totalReportsCount={totalReportsCount}
+                />
 
-                            <div className="hidden h-7 w-px bg-slate-200 sm:block" />
-
-                            <div className="flex items-center gap-2.5">
-                                <div className="flex size-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
-                                    <MapPin
-                                        className="size-4"
-                                        aria-hidden="true"
-                                    />
-                                </div>
-                                <div>
-                                    <p className="text-lg leading-none font-bold text-red-700 tabular-nums">
-                                        {statusCounts.verified}
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-[#3f4850]">
-                                        Terverifikasi
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="hidden h-7 w-px bg-slate-200 sm:block" />
-
-                            <div className="flex items-center gap-2.5">
-                                <div className="flex size-9 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
-                                    <Droplets
-                                        className="size-4"
-                                        aria-hidden="true"
-                                    />
-                                </div>
-                                <div>
-                                    <p className="text-lg leading-none font-bold text-amber-800 tabular-nums">
-                                        {statusCounts.unverified}
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-[#3f4850]">
-                                        Menunggu Verifikasi
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="hidden h-7 w-px bg-slate-200 md:block" />
-
-                            <div className="hidden items-center gap-2.5 md:flex">
-                                <div className="flex size-9 items-center justify-center rounded-lg bg-[#eff4ff] text-[#00628d]">
-                                    <Users
-                                        className="size-4"
-                                        aria-hidden="true"
-                                    />
-                                </div>
-                                <div>
-                                    <p className="text-lg leading-none font-bold tabular-nums">
-                                        {totalReportsCount}
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-[#3f4850]">
-                                        Laporan Warga
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 rounded-full bg-[#eff4ff] px-3 py-1 text-xs font-medium text-[#004b73]">
-                            <span className="size-2 rounded-full bg-emerald-500" />
-                            <span>Data Terintegrasi Real-Time</span>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Main Map Canvas + Floating Filter Pill Bar */}
+                {/* Main Map Canvas + Floating Filter Bar */}
                 <section
                     id="peta-pantauan"
                     aria-labelledby="map-heading"
@@ -362,56 +160,16 @@ export default function PublicMap({
                         Peta Persebaran Insiden Bencana Publik
                     </h1>
 
-                    {/* Floating Status Filter Bar */}
-                    <div className="pointer-events-none absolute top-3 right-0 left-0 z-20 flex justify-center px-4">
-                        <div
-                            className="pointer-events-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-2xl border border-white/60 bg-white/92 p-1.5 shadow-lg backdrop-blur-xl"
-                            role="group"
-                            aria-label="Filter status insiden"
-                        >
-                            {FILTER_OPTIONS.map((option) => {
-                                const isActive =
-                                    (option.key === 'all' &&
-                                        activeStatus === null) ||
-                                    option.key === activeStatus;
-                                const count = statusCounts[option.key];
-
-                                return (
-                                    <button
-                                        key={option.key}
-                                        type="button"
-                                        onClick={() => handleFilter(option.key)}
-                                        className={`inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[#0284c7] focus-visible:outline-none ${
-                                            isActive
-                                                ? 'bg-[#006194] text-white shadow-xs'
-                                                : 'text-[#3f4850] hover:bg-[#eff4ff] hover:text-[#0b1c30]'
-                                        }`}
-                                    >
-                                        {option.dotColor && (
-                                            <span
-                                                className={`size-2 rounded-full ${option.dotColor}`}
-                                                aria-hidden="true"
-                                            />
-                                        )}
-                                        <span>{option.label}</span>
-                                        <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[11px] font-bold tabular-nums ${
-                                                isActive
-                                                    ? 'bg-white/20 text-white'
-                                                    : 'bg-[#e5eeff] text-[#004b73]'
-                                            }`}
-                                        >
-                                            {count}
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
+                    <StatusFilterBar
+                        activeStatus={activeStatus}
+                        statusCounts={statusCounts}
+                        onSelectStatus={handleFilter}
+                    />
 
                     <DisasterMap
                         incidents={filteredIncidents}
                         selectedIncidentId={selectedId}
+                        focusTrigger={focusTrigger}
                         className="h-[460px] w-full sm:h-[540px] lg:h-[580px]"
                     />
 
@@ -562,95 +320,14 @@ export default function PublicMap({
                         />
                     ) : (
                         <div className="grid gap-4 md:grid-cols-2">
-                            {filteredIncidents.map((incident) => {
-                                const isSelected = selectedId === incident.id;
-                                return (
-                                    <article
-                                        key={incident.id}
-                                        className={`relative overflow-hidden rounded-xl bg-white p-5 pl-6 shadow-xs transition-shadow hover:shadow-md ${
-                                            isSelected
-                                                ? 'ring-2 ring-[#0284c7]'
-                                                : 'border border-slate-200/70'
-                                        }`}
-                                    >
-                                        <span
-                                            className={`absolute top-0 bottom-0 left-0 w-1.5 ${STATUS_STRIPE_COLOR[incident.status]}`}
-                                            aria-hidden="true"
-                                        />
-
-                                        <div className="flex flex-wrap items-center justify-between gap-2">
-                                            <div className="flex flex-wrap items-center gap-1.5">
-                                                <IncidentStatusBadge
-                                                    status={incident.status}
-                                                />
-                                                <span className="rounded-full bg-[#eff4ff] px-2.5 py-0.5 text-xs font-semibold text-[#004b73]">
-                                                    {
-                                                        DISASTER_TYPE_LABELS[
-                                                            incident
-                                                                .disaster_type
-                                                        ]
-                                                    }
-                                                </span>
-                                            </div>
-                                            <span className="rounded-full bg-[#eff4ff] px-2.5 py-0.5 text-xs font-semibold text-[#004b73] tabular-nums">
-                                                {incident.reports_count} laporan
-                                                warga
-                                            </span>
-                                        </div>
-
-                                        <h3 className="mt-3 text-base font-bold text-[#0b1c30]">
-                                            {incident.title}
-                                        </h3>
-
-                                        {incident.address && (
-                                            <p className="mt-1 flex items-start gap-1.5 text-xs font-medium text-[#3f4850]">
-                                                <MapPin
-                                                    className="mt-0.5 size-3.5 shrink-0 text-[#006194]"
-                                                    aria-hidden="true"
-                                                />
-                                                <span>{incident.address}</span>
-                                            </p>
-                                        )}
-
-                                        <p className="mt-2 line-clamp-2 text-sm text-[#3f4850]">
-                                            {incident.description}
-                                        </p>
-
-                                        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
-                                            <span className="text-xs text-[#707881]">
-                                                {formatRelativeOrDate(
-                                                    incident.created_at,
-                                                )}
-                                            </span>
-
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() =>
-                                                        focusOnMap(incident.id)
-                                                    }
-                                                    className="min-h-[38px] border-slate-200 bg-[#eff4ff] text-[#004b73] hover:bg-[#dce9ff]"
-                                                >
-                                                    Fokus Peta
-                                                </Button>
-                                                <Button
-                                                    asChild
-                                                    size="sm"
-                                                    className="min-h-[38px] bg-[#006194] text-white hover:bg-[#004b73]"
-                                                >
-                                                    <Link
-                                                        href={`/incidents/${incident.id}`}
-                                                    >
-                                                        Detail &amp; Bukti
-                                                    </Link>
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </article>
-                                );
-                            })}
+                            {filteredIncidents.map((incident) => (
+                                <IncidentCard
+                                    key={incident.id}
+                                    incident={incident}
+                                    isSelected={selectedId === incident.id}
+                                    onFocusMap={focusOnMap}
+                                />
+                            ))}
                         </div>
                     )}
                 </main>
@@ -660,77 +337,10 @@ export default function PublicMap({
                     Berbasis Partisipasi Masyarakat
                 </footer>
 
-                <Dialog
+                <ReportInfoDialog
                     open={reportInfoOpen}
                     onOpenChange={setReportInfoOpen}
-                >
-                    <DialogContent
-                        showCloseButton={false}
-                        className="bg-white text-[#0b1c30] shadow-xl ring-[#cfe6f7] sm:max-w-md"
-                    >
-                        <DialogHeader>
-                            <DialogTitle>Cara melapor bencana</DialogTitle>
-                            <DialogDescription className="text-[#3f4850]">
-                                Pelaporan warga dilakukan melalui aplikasi
-                                mobile SiagaKita. Web publik ini hanya untuk
-                                memantau insiden, sedangkan login di sini khusus
-                                admin.
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <ol className="space-y-2.5 text-sm text-[#3f4850]">
-                            <li className="flex gap-2.5">
-                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
-                                    1
-                                </span>
-                                Buka aplikasi mobile SiagaKita di ponsel Anda.
-                            </li>
-                            <li className="flex gap-2.5">
-                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
-                                    2
-                                </span>
-                                Daftar akun warga atau masuk dengan email dan
-                                kata sandi Anda.
-                            </li>
-                            <li className="flex gap-2.5">
-                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
-                                    3
-                                </span>
-                                Pilih buat laporan, tentukan jenis bencana dan
-                                lokasi GPS kejadian.
-                            </li>
-                            <li className="flex gap-2.5">
-                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
-                                    4
-                                </span>
-                                Lampirkan foto/video bukti, lalu kirim laporan.
-                            </li>
-                            <li className="flex gap-2.5">
-                                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
-                                    5
-                                </span>
-                                Pantau status verifikasi laporan di aplikasi
-                                atau pada peta publik ini.
-                            </li>
-                        </ol>
-
-                        <div className="rounded-lg bg-[#eff4ff] px-3 py-2.5 text-xs text-[#3f4850]">
-                            Bukti bahwa kondisi sudah pulih juga diajukan
-                            melalui aplikasi mobile, bukan dari halaman web ini.
-                        </div>
-
-                        <DialogFooter className="border-[#cfe6f7] bg-[#eff4ff]">
-                            <DialogClose asChild>
-                                <Button
-                                    type="button"
-                                    className="bg-[#006194] text-white hover:bg-[#004b73]"
-                                >
-                                    Mengerti
-                                </Button>
-                            </DialogClose>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                />
             </div>
         </>
     );

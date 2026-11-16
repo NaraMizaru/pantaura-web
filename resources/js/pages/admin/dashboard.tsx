@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
-import { DisasterMap } from '@/components/siagakita/disaster-map';
-import { EmptyState } from '@/components/siagakita/ui-states';
+import { DisasterMap } from '@/features/incidents/components/DisasterMap';
+import { EmptyState } from '@/features/incidents/components/UiStates';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { IncidentMarker } from '@/types/siagakita';

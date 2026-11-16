@@ -2,7 +2,7 @@ import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
-import { FlashListener } from '@/components/siagakita/ui-states';
+import { FlashListener } from '@/features/incidents/components/UiStates';
 import type { AppLayoutProps } from '@/types';
 
 export default function AppSidebarLayout({

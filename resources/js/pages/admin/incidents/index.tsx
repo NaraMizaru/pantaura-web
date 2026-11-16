@@ -1,9 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { IncidentStatusBadge } from '@/components/siagakita/status-badge';
-import { EmptyState } from '@/components/siagakita/ui-states';
+import { IncidentStatusBadge } from '@/features/incidents/components/StatusBadge';
+import { EmptyState } from '@/features/incidents/components/UiStates';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { DISASTER_TYPE_OPTIONS } from '@/lib/disaster';
+import { DISASTER_TYPE_OPTIONS } from '@/features/incidents/lib/disaster';
 import type {
     DisasterType,
     IncidentStatus,
