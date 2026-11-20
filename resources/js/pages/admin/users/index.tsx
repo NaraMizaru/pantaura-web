@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Auth, UserRole } from '@/types/auth';
-import type { PaginatedData } from '@/types/siagakita';
+import type { PaginatedData } from '@/types/pantaura';
 
 type UserRow = {
     id: string;
@@ -22,8 +22,7 @@ export default function AdminUsersIndex({
     const { auth } = usePage<{ auth: Auth }>().props;
 
     const handleToggleRole = (user: UserRow) => {
-        const nextRole: UserRole =
-            user.role === 'admin' ? 'citizen' : 'admin';
+        const nextRole: UserRole = user.role === 'admin' ? 'citizen' : 'admin';
         router.patch(`/admin/users/${user.id}/role`, { role: nextRole });
     };
 

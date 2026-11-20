@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $title
  * @property DisasterType $disaster_type
+ * @property list<string>|null $urgent_needs
  * @property string $description
  * @property float $latitude
  * @property float $longitude
@@ -34,6 +35,7 @@ use Illuminate\Support\Carbon;
 #[Fillable([
     'title',
     'disaster_type',
+    'urgent_needs',
     'description',
     'latitude',
     'longitude',
@@ -81,6 +83,14 @@ class Incident extends Model
     }
 
     /**
+     * @return HasMany<IncidentConfirmation, $this>
+     */
+    public function confirmations(): HasMany
+    {
+        return $this->hasMany(IncidentConfirmation::class);
+    }
+
+    /**
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
@@ -107,6 +117,7 @@ class Incident extends Model
             'latitude' => 'float',
             'longitude' => 'float',
             'disaster_type' => DisasterType::class,
+            'urgent_needs' => 'array',
             'status' => IncidentStatus::class,
             'verified_at' => 'datetime',
             'resolved_at' => 'datetime',

@@ -11,7 +11,7 @@ import type {
     IncidentStatus,
     ModerationStatus,
     PaginatedData,
-} from '@/types/siagakita';
+} from '@/types/pantaura';
 
 type ReportRow = {
     id: string;
@@ -47,11 +47,10 @@ export default function AdminReportsIndex({
     activeStatus,
 }: ReportsIndexProps) {
     const handleFilter = (key: ModerationStatus | 'all') => {
-        router.get(
-            '/admin/reports',
-            key === 'all' ? {} : { status: key },
-            { preserveState: true, replace: true },
-        );
+        router.get('/admin/reports', key === 'all' ? {} : { status: key }, {
+            preserveState: true,
+            replace: true,
+        });
     };
 
     return (

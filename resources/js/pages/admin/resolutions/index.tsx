@@ -22,7 +22,7 @@ import type {
     MediaItem,
     PaginatedData,
     ResolutionStatus,
-} from '@/types/siagakita';
+} from '@/types/pantaura';
 
 type ResolutionRow = {
     id: string;
@@ -60,11 +60,10 @@ export default function AdminResolutionsIndex({
     const rejectForm = useForm({ reason: '' });
 
     const handleFilter = (key: ResolutionStatus | 'all') => {
-        router.get(
-            '/admin/resolutions',
-            key === 'all' ? {} : { status: key },
-            { preserveState: true, replace: true },
-        );
+        router.get('/admin/resolutions', key === 'all' ? {} : { status: key }, {
+            preserveState: true,
+            replace: true,
+        });
     };
 
     const handleApprove = (id: string) => {

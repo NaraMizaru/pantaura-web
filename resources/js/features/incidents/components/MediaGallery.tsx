@@ -5,7 +5,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import type { MediaItem } from '@/types/siagakita';
+import type { MediaItem } from '@/types/pantaura';
 
 export function MediaGallery({ media }: { media: MediaItem[] }) {
     const [activeMedia, setActiveMedia] = useState<MediaItem | null>(null);

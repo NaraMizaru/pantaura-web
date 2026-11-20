@@ -6,9 +6,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
+use App\Enums\UrgentNeed;
 use App\Http\Controllers\Controller;
 use App\Models\Incident;
+use App\Services\IncidentService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,7 +26,7 @@ class IncidentManagementController extends Controller
         $activeType = is_string($type) ? DisasterType::tryFrom($type) : null;
 
         $incidents = Incident::query()
-            ->withCount(['reports', 'resolutionSubmissions'])
+            ->withCount(['reports', 'confirmations', 'resolutionSubmissions'])
             ->when($activeStatus !== null, fn ($q) => $q->where('status', $activeStatus))
             ->when($activeType !== null, fn ($q) => $q->where('disaster_type', $activeType->value))
             ->latest()
@@ -36,6 +40,7 @@ class IncidentManagementController extends Controller
                 'address' => $incident->address,
                 'status' => $incident->status->value,
                 'reports_count' => $incident->reports_count ?? 0,
+                'confirmations_count' => $incident->confirmations_count ?? 0,
                 'resolutions_count' => $incident->resolution_submissions_count ?? 0,
                 'created_at' => $incident->created_at?->toIso8601String(),
             ]);
@@ -49,6 +54,7 @@ class IncidentManagementController extends Controller
 
     public function show(Incident $incident): Response
     {
+        $incident->loadCount(['reports', 'confirmations']);
         $incident->load([
             'verifier:id,name',
             'reports.reporter:id,name',
@@ -58,12 +64,17 @@ class IncidentManagementController extends Controller
             'statusHistories.actor:id,name',
         ]);
 
+        /** @var list<string> $needs */
+        $needs = is_array($incident->urgent_needs) ? array_values($incident->urgent_needs) : [];
+
         return Inertia::render('admin/incidents/show', [
             'incident' => [
                 'id' => $incident->id,
                 'title' => $incident->title,
                 'disaster_type' => $incident->disaster_type->value,
                 'disaster_type_label' => $incident->disaster_type->label(),
+                'urgent_needs' => $needs,
+                'confirmations_count' => $incident->confirmations_count ?? 0,
                 'description' => $incident->description,
                 'latitude' => $incident->latitude,
                 'longitude' => $incident->longitude,
@@ -110,5 +121,23 @@ class IncidentManagementController extends Controller
                 ]),
             ],
         ]);
+    }
+
+    public function updateNeeds(
+        Request $request,
+        Incident $incident,
+        IncidentService $incidentService,
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'urgent_needs' => ['present', 'array', 'max:6'],
+            'urgent_needs.*' => ['required', Rule::enum(UrgentNeed::class)],
+        ]);
+
+        /** @var list<string> $needs */
+        $needs = array_values(array_map('strval', $validated['urgent_needs']));
+
+        $incidentService->updateUrgentNeeds($incident, $needs);
+
+        return back()->with('success', 'Kebutuhan mendesak insiden diperbarui.');
     }
 }

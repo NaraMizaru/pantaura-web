@@ -8,7 +8,7 @@ import type {
     DisasterType,
     IncidentStatus,
     PaginatedData,
-} from '@/types/siagakita';
+} from '@/types/pantaura';
 
 type IncidentRow = {
     id: string;
@@ -42,7 +42,10 @@ export default function AdminIncidentsIndex({
     activeStatus,
     activeType,
 }: IncidentsIndexProps) {
-    const buildParams = (status: IncidentStatus | 'all', type: DisasterType | 'all') => {
+    const buildParams = (
+        status: IncidentStatus | 'all',
+        type: DisasterType | 'all',
+    ) => {
         const params: Record<string, string> = {};
 
         if (status !== 'all') {

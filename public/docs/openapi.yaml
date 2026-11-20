@@ -1,834 +1,1105 @@
 openapi: 3.0.3
 info:
-  title: SiagaKita REST API
-  version: 1.0.0
-  description: |
-    REST API v1 untuk platform pelaporan dan pemantauan kejadian bencana **SiagaKita**.
-    Jenis bencana yang didukung: `flood` (Banjir), `earthquake` (Gempa Bumi), `landslide` (Tanah Longsor), dan `fire` (Kebakaran).
-    Autentikasi menggunakan Laravel Sanctum Personal Access Token (`Authorization: Bearer <token>`).
+    title: Pantaura REST API
+    version: 1.0.0
+    description: |
+        REST API v1 untuk platform pelaporan dan pemantauan kejadian bencana **Pantaura**.
+        Jenis bencana yang didukung: `flood` (Banjir), `earthquake` (Gempa Bumi), `landslide` (Tanah Longsor), dan `fire` (Kebakaran).
+        Autentikasi menggunakan Laravel Sanctum Personal Access Token (`Authorization: Bearer <token>`).
 servers:
-  - url: http://localhost:8080/api/v1
-    description: Local Docker server
+    - url: http://localhost:8080/api/v1
+      description: Local Docker server
 
 tags:
-  - name: Auth
-    description: Registrasi warga, login, profil user, dan logout (Sanctum token).
-  - name: Incidents
-    description: Daftar, peta, dan detail insiden bencana publik (status `rejected` disembunyikan).
-  - name: Reports
-    description: Pengiriman laporan bencana baru, laporan tambahan pada insiden aktif, dan riwayat laporan milik pengguna.
-  - name: Resolutions
-    description: Pengajuan bukti penyelesaian/penanganan insiden bencana oleh pengguna terautentikasi.
+    - name: Auth
+      description: Registrasi warga, login, profil user, dan logout (Sanctum token).
+    - name: Incidents
+      description: Daftar, peta, dan detail insiden bencana publik (status `rejected` disembunyikan).
+    - name: Reports
+      description: Pengiriman laporan bencana baru, laporan tambahan pada insiden aktif, dan riwayat laporan milik pengguna.
+    - name: Resolutions
+      description: Pengajuan bukti penyelesaian/penanganan insiden bencana oleh pengguna terautentikasi.
+    - name: SafeZones
+      description: Lokasi posko siaga dan titik evakuasi aman publik.
+    - name: WatchAreas
+      description: Area pantauan pribadi (geofence) dan notifikasi insiden terverifikasi di sekitar area tersebut.
 
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: Sanctum Token
-      description: Token Sanctum yang diperoleh dari endpoint `/auth/register` atau `/auth/login`.
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: Sanctum Token
+            description: Token Sanctum yang diperoleh dari endpoint `/auth/register` atau `/auth/login`.
 
-  schemas:
-    User:
-      type: object
-      required: [id, name, email, role]
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 9d8f7e6a-5b4c-3d2e-1f0a-123456789abc
-        name:
-          type: string
-          example: Budi Santoso
-        email:
-          type: string
-          format: email
-          example: budi@example.com
-        role:
-          type: string
-          enum: [citizen, admin]
-          example: citizen
+    schemas:
+        User:
+            type: object
+            required: [id, name, email, role]
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    example: 9d8f7e6a-5b4c-3d2e-1f0a-123456789abc
+                name:
+                    type: string
+                    example: Budi Santoso
+                email:
+                    type: string
+                    format: email
+                    example: budi@example.com
+                role:
+                    type: string
+                    enum: [citizen, admin]
+                    example: citizen
 
-    AuthResponse:
-      type: object
-      required: [token, token_type, user]
-      properties:
-        token:
-          type: string
-          example: 1|abcdef1234567890abcdef1234567890
-        token_type:
-          type: string
-          example: Bearer
-        user:
-          $ref: '#/components/schemas/User'
+        AuthResponse:
+            type: object
+            required: [token, token_type, user]
+            properties:
+                token:
+                    type: string
+                    example: 1|abcdef1234567890abcdef1234567890
+                token_type:
+                    type: string
+                    example: Bearer
+                user:
+                    $ref: '#/components/schemas/User'
 
-    Media:
-      type: object
-      required: [id, url, file_type, original_filename, file_size, created_at]
-      properties:
-        id:
-          type: string
-          format: uuid
-        url:
-          type: string
-          format: uri
-          example: http://localhost:8080/storage/reports/sample.jpg
-        file_type:
-          type: string
-          enum: [image, video]
-          example: image
-        original_filename:
-          type: string
-          example: banjir-depan-rumah.jpg
-        file_size:
-          type: integer
-          description: Ukuran file dalam bytes.
-          example: 245760
-        created_at:
-          type: string
-          format: date-time
-          nullable: true
+        Media:
+            type: object
+            required:
+                [id, url, file_type, original_filename, file_size, created_at]
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                url:
+                    type: string
+                    format: uri
+                    example: http://localhost:8080/storage/reports/sample.jpg
+                file_type:
+                    type: string
+                    enum: [image, video]
+                    example: image
+                original_filename:
+                    type: string
+                    example: banjir-depan-rumah.jpg
+                file_size:
+                    type: integer
+                    description: Ukuran file dalam bytes.
+                    example: 245760
+                created_at:
+                    type: string
+                    format: date-time
+                    nullable: true
 
-    Report:
-      type: object
-      required: [id, incident_id, description, latitude, longitude, submitted_at, moderation_status]
-      properties:
-        id:
-          type: string
-          format: uuid
-        incident_id:
-          type: string
-          format: uuid
-        description:
-          type: string
-          example: Air menggenangi jalan setinggi 50 cm sejak pukul 06.00 WIB.
-        latitude:
-          type: number
-          format: float
-          example: -6.208763
-        longitude:
-          type: number
-          format: float
-          example: 106.845599
-        submitted_at:
-          type: string
-          format: date-time
-          nullable: true
-        moderation_status:
-          type: string
-          enum: [pending, verified, rejected]
-          example: pending
-        rejection_reason:
-          type: string
-          nullable: true
-          example: null
-        reporter:
-          $ref: '#/components/schemas/User'
-        media:
-          type: array
-          items:
-            $ref: '#/components/schemas/Media'
-        incident:
-          $ref: '#/components/schemas/IncidentSummary'
+        Report:
+            type: object
+            required:
+                [
+                    id,
+                    incident_id,
+                    description,
+                    latitude,
+                    longitude,
+                    submitted_at,
+                    moderation_status,
+                ]
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                incident_id:
+                    type: string
+                    format: uuid
+                description:
+                    type: string
+                    example: Air menggenangi jalan setinggi 50 cm sejak pukul 06.00 WIB.
+                latitude:
+                    type: number
+                    format: float
+                    example: -6.208763
+                longitude:
+                    type: number
+                    format: float
+                    example: 106.845599
+                submitted_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                moderation_status:
+                    type: string
+                    enum: [pending, verified, rejected]
+                    example: pending
+                rejection_reason:
+                    type: string
+                    nullable: true
+                    example: null
+                reporter:
+                    $ref: '#/components/schemas/User'
+                media:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Media'
+                incident:
+                    $ref: '#/components/schemas/IncidentSummary'
 
-    ResolutionSubmission:
-      type: object
-      required: [id, incident_id, description, status, created_at]
-      properties:
-        id:
-          type: string
-          format: uuid
-        incident_id:
-          type: string
-          format: uuid
-        description:
-          type: string
-          example: Saluran air sudah dibersihkan dan genangan air sudah surut.
-        status:
-          type: string
-          enum: [pending, approved, rejected]
-          example: pending
-        rejection_reason:
-          type: string
-          nullable: true
-        reviewed_at:
-          type: string
-          format: date-time
-          nullable: true
-        created_at:
-          type: string
-          format: date-time
-          nullable: true
-        submitter:
-          $ref: '#/components/schemas/User'
-        media:
-          type: array
-          items:
-            $ref: '#/components/schemas/Media'
+        ResolutionSubmission:
+            type: object
+            required: [id, incident_id, description, status, created_at]
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                incident_id:
+                    type: string
+                    format: uuid
+                description:
+                    type: string
+                    example: Saluran air sudah dibersihkan dan genangan air sudah surut.
+                status:
+                    type: string
+                    enum: [pending, approved, rejected]
+                    example: pending
+                rejection_reason:
+                    type: string
+                    nullable: true
+                reviewed_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                created_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                submitter:
+                    $ref: '#/components/schemas/User'
+                media:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Media'
 
-    IncidentStatusHistory:
-      type: object
-      required: [id, new_status, created_at]
-      properties:
-        id:
-          type: string
-          format: uuid
-        previous_status:
-          type: string
-          enum: [unverified, verified, resolution_submitted, resolved, rejected]
-          nullable: true
-        new_status:
-          type: string
-          enum: [unverified, verified, resolution_submitted, resolved, rejected]
-        reason:
-          type: string
-          nullable: true
-        changed_by:
-          $ref: '#/components/schemas/User'
-        created_at:
-          type: string
-          format: date-time
-          nullable: true
+        IncidentStatusHistory:
+            type: object
+            required: [id, new_status, created_at]
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                previous_status:
+                    type: string
+                    enum:
+                        [
+                            unverified,
+                            verified,
+                            resolution_submitted,
+                            resolved,
+                            rejected,
+                        ]
+                    nullable: true
+                new_status:
+                    type: string
+                    enum:
+                        [
+                            unverified,
+                            verified,
+                            resolution_submitted,
+                            resolved,
+                            rejected,
+                        ]
+                reason:
+                    type: string
+                    nullable: true
+                changed_by:
+                    $ref: '#/components/schemas/User'
+                created_at:
+                    type: string
+                    format: date-time
+                    nullable: true
 
-    IncidentSummary:
-      type: object
-      required: [id, title, disaster_type, disaster_type_label, description, latitude, longitude, status, status_label, created_at]
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-          example: Banjir Jl. Sudirman
-        disaster_type:
-          type: string
-          enum: [flood, earthquake, landslide, fire]
-          example: flood
-        disaster_type_label:
-          type: string
-          example: Banjir
-        description:
-          type: string
-        latitude:
-          type: number
-          format: float
-          example: -6.208763
-        longitude:
-          type: number
-          format: float
-          example: 106.845599
-        address:
-          type: string
-          nullable: true
-          example: Jl. Sudirman No. 10, Jakarta Pusat
-        status:
-          type: string
-          enum: [unverified, verified, resolution_submitted, resolved]
-          example: verified
-        status_label:
-          type: string
-          example: Terverifikasi
-        reports_count:
-          type: integer
-          example: 3
-        verified_at:
-          type: string
-          format: date-time
-          nullable: true
-        resolved_at:
-          type: string
-          format: date-time
-          nullable: true
-        created_at:
-          type: string
-          format: date-time
-          nullable: true
+        IncidentSummary:
+            type: object
+            required:
+                [
+                    id,
+                    title,
+                    disaster_type,
+                    disaster_type_label,
+                    description,
+                    latitude,
+                    longitude,
+                    status,
+                    status_label,
+                    created_at,
+                ]
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                title:
+                    type: string
+                    example: Banjir Jl. Sudirman
+                disaster_type:
+                    type: string
+                    enum: [flood, earthquake, landslide, fire]
+                    example: flood
+                disaster_type_label:
+                    type: string
+                    example: Banjir
+                description:
+                    type: string
+                latitude:
+                    type: number
+                    format: float
+                    example: -6.208763
+                longitude:
+                    type: number
+                    format: float
+                    example: 106.845599
+                address:
+                    type: string
+                    nullable: true
+                    example: Jl. Sudirman No. 10, Jakarta Pusat
+                status:
+                    type: string
+                    enum: [unverified, verified, resolution_submitted, resolved]
+                    example: verified
+                status_label:
+                    type: string
+                    example: Terverifikasi
+                reports_count:
+                    type: integer
+                    example: 3
+                verified_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                resolved_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                created_at:
+                    type: string
+                    format: date-time
+                    nullable: true
 
-    IncidentDetail:
-      allOf:
-        - $ref: '#/components/schemas/IncidentSummary'
-        - type: object
-          properties:
-            reports:
-              type: array
-              items:
-                $ref: '#/components/schemas/Report'
-            resolutions:
-              type: array
-              items:
-                $ref: '#/components/schemas/ResolutionSubmission'
-            status_histories:
-              type: array
-              items:
-                $ref: '#/components/schemas/IncidentStatusHistory'
+        IncidentDetail:
+            allOf:
+                - $ref: '#/components/schemas/IncidentSummary'
+                - type: object
+                  properties:
+                      reports:
+                          type: array
+                          items:
+                              $ref: '#/components/schemas/Report'
+                      resolutions:
+                          type: array
+                          items:
+                              $ref: '#/components/schemas/ResolutionSubmission'
+                      status_histories:
+                          type: array
+                          items:
+                              $ref: '#/components/schemas/IncidentStatusHistory'
 
-    PaginationLinks:
-      type: object
-      properties:
-        first:
-          type: string
-          nullable: true
-        last:
-          type: string
-          nullable: true
-        prev:
-          type: string
-          nullable: true
-        next:
-          type: string
-          nullable: true
+        PaginationLinks:
+            type: object
+            properties:
+                first:
+                    type: string
+                    nullable: true
+                last:
+                    type: string
+                    nullable: true
+                prev:
+                    type: string
+                    nullable: true
+                next:
+                    type: string
+                    nullable: true
 
-    PaginationMeta:
-      type: object
-      properties:
-        current_page:
-          type: integer
-          example: 1
-        from:
-          type: integer
-          nullable: true
-        last_page:
-          type: integer
-          example: 1
-        path:
-          type: string
-        per_page:
-          type: integer
-          example: 15
-        to:
-          type: integer
-          nullable: true
-        total:
-          type: integer
-          example: 1
+        PaginationMeta:
+            type: object
+            properties:
+                current_page:
+                    type: integer
+                    example: 1
+                from:
+                    type: integer
+                    nullable: true
+                last_page:
+                    type: integer
+                    example: 1
+                path:
+                    type: string
+                per_page:
+                    type: integer
+                    example: 15
+                to:
+                    type: integer
+                    nullable: true
+                total:
+                    type: integer
+                    example: 1
 
-    MessageResponse:
-      type: object
-      required: [message]
-      properties:
-        message:
-          type: string
-          example: Berhasil.
+        MessageResponse:
+            type: object
+            required: [message]
+            properties:
+                message:
+                    type: string
+                    example: Berhasil.
 
-    ValidationError:
-      type: object
-      required: [message, errors]
-      properties:
-        message:
-          type: string
-          example: The given data was invalid.
-        errors:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              type: string
+        ValidationError:
+            type: object
+            required: [message, errors]
+            properties:
+                message:
+                    type: string
+                    example: The given data was invalid.
+                errors:
+                    type: object
+                    additionalProperties:
+                        type: array
+                        items:
+                            type: string
 
-  responses:
-    Unauthenticated:
-      description: Tidak terautentikasi (token tidak ada atau tidak valid).
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/MessageResponse'
-          example:
-            message: Unauthenticated.
-    ValidationFailed:
-      description: Validasi input atau aturan bisnis gagal.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ValidationError'
-    NotFound:
-      description: Resource tidak ditemukan atau berstatus rejected.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/MessageResponse'
-          example:
-            message: Insiden tidak ditemukan.
-    TooManyRequests:
-      description: Terlalu banyak percobaan (rate limit 10 permintaan per menit).
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/MessageResponse'
-          example:
-            message: Too Many Attempts.
+    responses:
+        Unauthenticated:
+            description: Tidak terautentikasi (token tidak ada atau tidak valid).
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MessageResponse'
+                    example:
+                        message: Unauthenticated.
+        ValidationFailed:
+            description: Validasi input atau aturan bisnis gagal.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ValidationError'
+        NotFound:
+            description: Resource tidak ditemukan atau berstatus rejected.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MessageResponse'
+                    example:
+                        message: Insiden tidak ditemukan.
+        TooManyRequests:
+            description: Terlalu banyak percobaan (rate limit 10 permintaan per menit).
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MessageResponse'
+                    example:
+                        message: Too Many Attempts.
 
 paths:
-  /auth/register:
-    post:
-      tags: [Auth]
-      summary: Registrasi akun warga baru
-      description: |
-        Mendaftarkan akun baru dengan role `citizen` (ditetapkan oleh server) dan langsung mengembalikan Sanctum Bearer token.
-        Dibatasi `throttle:10,1` (maksimal 10 permintaan per menit).
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [name, email, password, password_confirmation]
-              properties:
-                name:
-                  type: string
-                  maxLength: 255
-                  example: Budi Santoso
-                email:
-                  type: string
-                  format: email
-                  maxLength: 255
-                  example: budi@example.com
-                password:
-                  type: string
-                  format: password
-                  minLength: 8
-                  example: password123
-                password_confirmation:
-                  type: string
-                  format: password
-                  example: password123
-                device_name:
-                  type: string
-                  maxLength: 100
-                  nullable: true
-                  example: Pixel 8 Android
-      responses:
-        '201':
-          description: Registrasi berhasil.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '422':
-          $ref: '#/components/responses/ValidationFailed'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+    /auth/register:
+        post:
+            tags: [Auth]
+            summary: Registrasi akun warga baru
+            description: |
+                Mendaftarkan akun baru dengan role `citizen` (ditetapkan oleh server) dan langsung mengembalikan Sanctum Bearer token.
+                Dibatasi `throttle:10,1` (maksimal 10 permintaan per menit).
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                [name, email, password, password_confirmation]
+                            properties:
+                                name:
+                                    type: string
+                                    maxLength: 255
+                                    example: Budi Santoso
+                                email:
+                                    type: string
+                                    format: email
+                                    maxLength: 255
+                                    example: budi@example.com
+                                password:
+                                    type: string
+                                    format: password
+                                    minLength: 8
+                                    example: password123
+                                password_confirmation:
+                                    type: string
+                                    format: password
+                                    example: password123
+                                device_name:
+                                    type: string
+                                    maxLength: 100
+                                    nullable: true
+                                    example: Pixel 8 Android
+            responses:
+                '201':
+                    description: Registrasi berhasil.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AuthResponse'
+                '422':
+                    $ref: '#/components/responses/ValidationFailed'
+                '429':
+                    $ref: '#/components/responses/TooManyRequests'
 
-  /auth/login:
-    post:
-      tags: [Auth]
-      summary: Login pengguna
-      description: |
-        Autentikasi email & password untuk mendapatkan Sanctum Bearer token.
-        Dibatasi `throttle:10,1` (maksimal 10 permintaan per menit).
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [email, password]
-              properties:
-                email:
-                  type: string
-                  format: email
-                  example: budi@example.com
-                password:
-                  type: string
-                  format: password
-                  example: password123
-                device_name:
-                  type: string
-                  maxLength: 100
-                  nullable: true
-                  example: iPhone 15
-      responses:
-        '200':
-          description: Login berhasil.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '422':
-          $ref: '#/components/responses/ValidationFailed'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+    /auth/login:
+        post:
+            tags: [Auth]
+            summary: Login pengguna
+            description: |
+                Autentikasi email & password untuk mendapatkan Sanctum Bearer token.
+                Dibatasi `throttle:10,1` (maksimal 10 permintaan per menit).
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [email, password]
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+                                    example: budi@example.com
+                                password:
+                                    type: string
+                                    format: password
+                                    example: password123
+                                device_name:
+                                    type: string
+                                    maxLength: 100
+                                    nullable: true
+                                    example: iPhone 15
+            responses:
+                '200':
+                    description: Login berhasil.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AuthResponse'
+                '422':
+                    $ref: '#/components/responses/ValidationFailed'
+                '429':
+                    $ref: '#/components/responses/TooManyRequests'
 
-  /auth/logout:
-    post:
-      tags: [Auth]
-      summary: Logout token aktif
-      description: Mencabut Sanctum access token yang sedang digunakan pada request ini.
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Logout berhasil.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example:
-                message: Berhasil logout.
-        '401':
-          $ref: '#/components/responses/Unauthenticated'
+    /auth/logout:
+        post:
+            tags: [Auth]
+            summary: Logout token aktif
+            description: Mencabut Sanctum access token yang sedang digunakan pada request ini.
+            security:
+                - bearerAuth: []
+            responses:
+                '200':
+                    description: Logout berhasil.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MessageResponse'
+                            example:
+                                message: Berhasil logout.
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
 
-  /auth/me:
-    get:
-      tags: [Auth]
-      summary: Profil pengguna saat ini
-      description: Mengembalikan data pengguna yang sedang terautentikasi.
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Data pengguna berhasil diambil.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [data]
-                properties:
-                  data:
-                    $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/Unauthenticated'
+    /auth/me:
+        get:
+            tags: [Auth]
+            summary: Profil pengguna saat ini
+            description: Mengembalikan data pengguna yang sedang terautentikasi.
+            security:
+                - bearerAuth: []
+            responses:
+                '200':
+                    description: Data pengguna berhasil diambil.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [data]
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/User'
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
 
-  /incidents:
-    get:
-      tags: [Incidents]
-      summary: Daftar insiden bencana (terpaginasi)
-      description: Mengembalikan daftar insiden bencana publik dengan paginasi. Insiden berstatus `rejected` tidak disertakan.
-      parameters:
-        - name: status
-          in: query
-          required: false
-          description: Filter berdasarkan status insiden (`rejected` diabaikan).
-          schema:
-            type: string
-            enum: [unverified, verified, resolution_submitted, resolved]
-        - name: type
-          in: query
-          required: false
-          description: Filter berdasarkan jenis bencana.
-          schema:
-            type: string
-            enum: [flood, earthquake, landslide, fire]
-        - name: page
-          in: query
-          required: false
-          description: Nomor halaman paginasi.
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-      responses:
-        '200':
-          description: Daftar insiden terpaginasi.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [data, links, meta]
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/IncidentSummary'
-                  links:
-                    $ref: '#/components/schemas/PaginationLinks'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
+    /incidents:
+        get:
+            tags: [Incidents]
+            summary: Daftar insiden bencana (terpaginasi)
+            description: Mengembalikan daftar insiden bencana publik dengan paginasi. Insiden berstatus `rejected` tidak disertakan.
+            parameters:
+                - name: status
+                  in: query
+                  required: false
+                  description: Filter berdasarkan status insiden (`rejected` diabaikan).
+                  schema:
+                      type: string
+                      enum:
+                          [unverified, verified, resolution_submitted, resolved]
+                - name: type
+                  in: query
+                  required: false
+                  description: Filter berdasarkan jenis bencana.
+                  schema:
+                      type: string
+                      enum: [flood, earthquake, landslide, fire]
+                - name: page
+                  in: query
+                  required: false
+                  description: Nomor halaman paginasi.
+                  schema:
+                      type: integer
+                      minimum: 1
+                      default: 1
+            responses:
+                '200':
+                    description: Daftar insiden terpaginasi.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [data, links, meta]
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/IncidentSummary'
+                                    links:
+                                        $ref: '#/components/schemas/PaginationLinks'
+                                    meta:
+                                        $ref: '#/components/schemas/PaginationMeta'
 
-  /incidents/map:
-    get:
-      tags: [Incidents]
-      summary: Daftar marker insiden untuk peta
-      description: Mengembalikan daftar ringkas insiden aktif untuk ditampilkan sebagai marker di peta. Insiden berstatus `rejected` tidak disertakan.
-      parameters:
-        - name: status
-          in: query
-          required: false
-          description: Filter berdasarkan status insiden (`rejected` diabaikan).
-          schema:
-            type: string
-            enum: [unverified, verified, resolution_submitted, resolved]
-        - name: type
-          in: query
-          required: false
-          description: Filter berdasarkan jenis bencana.
-          schema:
-            type: string
-            enum: [flood, earthquake, landslide, fire]
-      responses:
-        '200':
-          description: Daftar marker insiden.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [data]
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/IncidentSummary'
+    /incidents/map:
+        get:
+            tags: [Incidents]
+            summary: Daftar marker insiden untuk peta
+            description: Mengembalikan daftar ringkas insiden aktif untuk ditampilkan sebagai marker di peta. Insiden berstatus `rejected` tidak disertakan.
+            parameters:
+                - name: status
+                  in: query
+                  required: false
+                  description: Filter berdasarkan status insiden (`rejected` diabaikan).
+                  schema:
+                      type: string
+                      enum:
+                          [unverified, verified, resolution_submitted, resolved]
+                - name: type
+                  in: query
+                  required: false
+                  description: Filter berdasarkan jenis bencana.
+                  schema:
+                      type: string
+                      enum: [flood, earthquake, landslide, fire]
+            responses:
+                '200':
+                    description: Daftar marker insiden.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [data]
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/IncidentSummary'
 
-  /incidents/{incident}:
-    get:
-      tags: [Incidents]
-      summary: Detail insiden bencana
-      description: Mengembalikan detail lengkap satu insiden beserta laporan terkait, pengajuan resolusi, dan riwayat perubahan status. Mengembalikan 404 jika insiden tidak ada atau berstatus `rejected`.
-      parameters:
-        - name: incident
-          in: path
-          required: true
-          description: UUID insiden.
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Detail insiden.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [data]
-                properties:
-                  data:
-                    $ref: '#/components/schemas/IncidentDetail'
-        '404':
-          $ref: '#/components/responses/NotFound'
+    /incidents/{incident}:
+        get:
+            tags: [Incidents]
+            summary: Detail insiden bencana
+            description: Mengembalikan detail lengkap satu insiden beserta laporan terkait, pengajuan resolusi, dan riwayat perubahan status. Mengembalikan 404 jika insiden tidak ada atau berstatus `rejected`.
+            parameters:
+                - name: incident
+                  in: path
+                  required: true
+                  description: UUID insiden.
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                '200':
+                    description: Detail insiden.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [data]
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/IncidentDetail'
+                '404':
+                    $ref: '#/components/responses/NotFound'
 
-  /reports:
-    post:
-      tags: [Reports]
-      summary: Kirim laporan bencana baru
-      description: Membuat laporan bencana baru beserta insiden stub berstatus `unverified` dan mengunggah 1 sampai 5 file bukti foto/video secara atomik. Jika `disaster_type` tidak dikirim, jenis default adalah `flood`.
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required: [latitude, longitude, description, 'media[]']
-              properties:
-                disaster_type:
-                  type: string
-                  enum: [flood, earthquake, landslide, fire]
-                  default: flood
-                  description: Jenis bencana. Opsional untuk kompatibilitas; default `flood`.
-                  example: earthquake
-                latitude:
-                  type: number
-                  format: float
-                  minimum: -90
-                  maximum: 90
-                  example: -6.208763
-                longitude:
-                  type: number
-                  format: float
-                  minimum: -180
-                  maximum: 180
-                  example: 106.845599
-                description:
-                  type: string
-                  minLength: 10
-                  maxLength: 2000
-                  example: Genangan air setinggi lutut orang dewasa menutupi jalan utama.
-                address:
-                  type: string
-                  maxLength: 255
-                  nullable: true
-                  example: Jl. Jenderal Sudirman, Jakarta Pusat
-                'media[]':
-                  type: array
-                  minItems: 1
-                  maxItems: 5
-                  description: 1 sampai 5 file (`image/jpeg`, `image/png`, `image/webp`, `video/mp4`, `video/quicktime`), maksimal 20 MB per file.
-                  items:
-                    type: string
-                    format: binary
-      responses:
-        '201':
-          description: Laporan bencana berhasil dibuat.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [message, data]
-                properties:
-                  message:
-                    type: string
-                    example: Laporan bencana berhasil dikirim.
-                  data:
-                    $ref: '#/components/schemas/Report'
-        '401':
-          $ref: '#/components/responses/Unauthenticated'
-        '422':
-          $ref: '#/components/responses/ValidationFailed'
+    /reports:
+        post:
+            tags: [Reports]
+            summary: Kirim laporan bencana baru
+            description: Membuat laporan bencana baru beserta insiden stub berstatus `unverified` dan mengunggah 1 sampai 5 file bukti foto/video secara atomik. Jika `disaster_type` tidak dikirim, jenis default adalah `flood`.
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            required:
+                                [latitude, longitude, description, 'media[]']
+                            properties:
+                                disaster_type:
+                                    type: string
+                                    enum: [flood, earthquake, landslide, fire]
+                                    default: flood
+                                    description: Jenis bencana. Opsional untuk kompatibilitas; default `flood`.
+                                    example: earthquake
+                                latitude:
+                                    type: number
+                                    format: float
+                                    minimum: -90
+                                    maximum: 90
+                                    example: -6.208763
+                                longitude:
+                                    type: number
+                                    format: float
+                                    minimum: -180
+                                    maximum: 180
+                                    example: 106.845599
+                                description:
+                                    type: string
+                                    minLength: 10
+                                    maxLength: 2000
+                                    example: Genangan air setinggi lutut orang dewasa menutupi jalan utama.
+                                address:
+                                    type: string
+                                    maxLength: 255
+                                    nullable: true
+                                    example: Jl. Jenderal Sudirman, Jakarta Pusat
+                                'media[]':
+                                    type: array
+                                    minItems: 1
+                                    maxItems: 5
+                                    description: 1 sampai 5 file (`image/jpeg`, `image/png`, `image/webp`, `video/mp4`, `video/quicktime`), maksimal 20 MB per file.
+                                    items:
+                                        type: string
+                                        format: binary
+            responses:
+                '201':
+                    description: Laporan bencana berhasil dibuat.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [message, data]
+                                properties:
+                                    message:
+                                        type: string
+                                        example: Laporan bencana berhasil dikirim.
+                                    data:
+                                        $ref: '#/components/schemas/Report'
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
+                '422':
+                    $ref: '#/components/responses/ValidationFailed'
 
-  /reports/my:
-    get:
-      tags: [Reports]
-      summary: Daftar laporan milik pengguna saat ini
-      description: Mengembalikan daftar terpaginasi laporan banjir yang dikirim oleh pengguna yang sedang login.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-      responses:
-        '200':
-          description: Daftar laporan milik pengguna.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [data, links, meta]
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Report'
-                  links:
-                    $ref: '#/components/schemas/PaginationLinks'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
-        '401':
-          $ref: '#/components/responses/Unauthenticated'
+    /reports/my:
+        get:
+            tags: [Reports]
+            summary: Daftar laporan milik pengguna saat ini
+            description: Mengembalikan daftar terpaginasi laporan banjir yang dikirim oleh pengguna yang sedang login.
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: page
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 1
+                      default: 1
+            responses:
+                '200':
+                    description: Daftar laporan milik pengguna.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [data, links, meta]
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Report'
+                                    links:
+                                        $ref: '#/components/schemas/PaginationLinks'
+                                    meta:
+                                        $ref: '#/components/schemas/PaginationMeta'
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
 
-  /incidents/{incident}/reports:
-    post:
-      tags: [Reports]
-      summary: Tambah laporan pada insiden yang sudah ada
-      description: Menambahkan laporan dan bukti baru ke insiden yang sudah ada (Multiple Reports, One Incident). Ditolak dengan `422` jika insiden berstatus `resolved` atau `rejected`.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: incident
-          in: path
-          required: true
-          description: UUID insiden target.
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required: [latitude, longitude, description, 'media[]']
-              properties:
-                latitude:
-                  type: number
-                  format: float
-                  minimum: -90
-                  maximum: 90
-                  example: -6.208900
-                longitude:
-                  type: number
-                  format: float
-                  minimum: -180
-                  maximum: 180
-                  example: 106.845700
-                description:
-                  type: string
-                  minLength: 10
-                  maxLength: 2000
-                  example: Air masih naik di sisi selatan perempatan.
-                'media[]':
-                  type: array
-                  minItems: 1
-                  maxItems: 5
-                  description: 1 sampai 5 file (`image/jpeg`, `image/png`, `image/webp`, `video/mp4`, `video/quicktime`), maksimal 20 MB per file.
-                  items:
-                    type: string
-                    format: binary
-      responses:
-        '201':
-          description: Laporan tambahan berhasil ditambahkan.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [message, data]
-                properties:
-                  message:
-                    type: string
-                    example: Laporan tambahan berhasil dikirim.
-                  data:
-                    $ref: '#/components/schemas/Report'
-        '401':
-          $ref: '#/components/responses/Unauthenticated'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          description: Validasi gagal atau status insiden tidak mengizinkan laporan tambahan.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
+    /incidents/{incident}/reports:
+        post:
+            tags: [Reports]
+            summary: Tambah laporan pada insiden yang sudah ada
+            description: Menambahkan laporan dan bukti baru ke insiden yang sudah ada (Multiple Reports, One Incident). Ditolak dengan `422` jika insiden berstatus `resolved` atau `rejected`.
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: incident
+                  in: path
+                  required: true
+                  description: UUID insiden target.
+                  schema:
+                      type: string
+                      format: uuid
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            required:
+                                [latitude, longitude, description, 'media[]']
+                            properties:
+                                latitude:
+                                    type: number
+                                    format: float
+                                    minimum: -90
+                                    maximum: 90
+                                    example: -6.208900
+                                longitude:
+                                    type: number
+                                    format: float
+                                    minimum: -180
+                                    maximum: 180
+                                    example: 106.845700
+                                description:
+                                    type: string
+                                    minLength: 10
+                                    maxLength: 2000
+                                    example: Air masih naik di sisi selatan perempatan.
+                                'media[]':
+                                    type: array
+                                    minItems: 1
+                                    maxItems: 5
+                                    description: 1 sampai 5 file (`image/jpeg`, `image/png`, `image/webp`, `video/mp4`, `video/quicktime`), maksimal 20 MB per file.
+                                    items:
+                                        type: string
+                                        format: binary
+            responses:
+                '201':
+                    description: Laporan tambahan berhasil ditambahkan.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [message, data]
+                                properties:
+                                    message:
+                                        type: string
+                                        example: Laporan tambahan berhasil dikirim.
+                                    data:
+                                        $ref: '#/components/schemas/Report'
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '422':
+                    description: Validasi gagal atau status insiden tidak mengizinkan laporan tambahan.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MessageResponse'
 
-  /incidents/{incident}/resolutions:
-    post:
-      tags: [Resolutions]
-      summary: Ajukan bukti penyelesaian (resolusi) insiden
-      description: Mengirimkan bukti bahwa banjir pada insiden terkait sudah surut/tertangani. Hanya diizinkan jika status insiden memungkinkan pengajuan resolusi (mengembalikan `422` jika tidak valid).
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: incident
-          in: path
-          required: true
-          description: UUID insiden target.
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required: [description, 'media[]']
-              properties:
-                description:
-                  type: string
-                  minLength: 10
-                  maxLength: 2000
-                  example: Air sudah surut total dan jalan dapat dilalui kendaraan.
-                'media[]':
-                  type: array
-                  minItems: 1
-                  maxItems: 5
-                  description: 1 sampai 5 file (`image/jpeg`, `image/png`, `image/webp`, `video/mp4`, `video/quicktime`), maksimal 20 MB per file.
-                  items:
-                    type: string
-                    format: binary
-      responses:
-        '201':
-          description: Pengajuan resolusi berhasil dikirim.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [message, data]
-                properties:
-                  message:
-                    type: string
-                    example: Pengajuan penyelesaian insiden berhasil dikirim.
-                  data:
-                    $ref: '#/components/schemas/ResolutionSubmission'
-        '401':
-          $ref: '#/components/responses/Unauthenticated'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          description: Validasi gagal atau status insiden tidak mengizinkan pengajuan resolusi.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
+    /incidents/{incident}/resolutions:
+        post:
+            tags: [Resolutions]
+            summary: Ajukan bukti penyelesaian (resolusi) insiden
+            description: Mengirimkan bukti bahwa banjir pada insiden terkait sudah surut/tertangani. Hanya diizinkan jika status insiden memungkinkan pengajuan resolusi (mengembalikan `422` jika tidak valid).
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: incident
+                  in: path
+                  required: true
+                  description: UUID insiden target.
+                  schema:
+                      type: string
+                      format: uuid
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            required: [description, 'media[]']
+                            properties:
+                                description:
+                                    type: string
+                                    minLength: 10
+                                    maxLength: 2000
+                                    example: Air sudah surut total dan jalan dapat dilalui kendaraan.
+                                'media[]':
+                                    type: array
+                                    minItems: 1
+                                    maxItems: 5
+                                    description: 1 sampai 5 file (`image/jpeg`, `image/png`, `image/webp`, `video/mp4`, `video/quicktime`), maksimal 20 MB per file.
+                                    items:
+                                        type: string
+                                        format: binary
+            responses:
+                '201':
+                    description: Pengajuan resolusi berhasil dikirim.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [message, data]
+                                properties:
+                                    message:
+                                        type: string
+                                        example: Pengajuan penyelesaian insiden berhasil dikirim.
+                                    data:
+                                        $ref: '#/components/schemas/ResolutionSubmission'
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '422':
+                    description: Validasi gagal atau status insiden tidak mengizinkan pengajuan resolusi.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MessageResponse'
+
+    /incidents/nearby:
+        get:
+            tags: [Incidents]
+            summary: Deteksi insiden aktif terdekat (auto-suggest duplikat)
+            description: Mengembalikan insiden aktif di sekitar koordinat `lat`/`lng` dalam radius tertentu (default 500 meter, maksimal 5000 meter).
+            parameters:
+                - name: lat
+                  in: query
+                  required: true
+                  schema:
+                      type: number
+                      format: float
+                - name: lng
+                  in: query
+                  required: true
+                  schema:
+                      type: number
+                      format: float
+                - name: type
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [flood, earthquake, landslide, fire]
+                - name: radius
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 100
+                      maximum: 5000
+                      default: 500
+            responses:
+                '200':
+                    description: Daftar insiden aktif terdekat beserta `distance_meters`.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [data]
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/IncidentSummary'
+
+    /incidents/{incident}/confirm:
+        post:
+            tags: [Incidents]
+            summary: Toggle konfirmasi warga (Crowd-Confirmation)
+            description: Menambahkan atau membatalkan konfirmasi warga pada insiden aktif yang masih berlangsung.
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: incident
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                '200':
+                    description: Status konfirmasi diperbarui.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [message, data]
+                                properties:
+                                    message:
+                                        type: string
+                                    data:
+                                        type: object
+                                        properties:
+                                            confirmed:
+                                                type: boolean
+                                            confirmations_count:
+                                                type: integer
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
+                '422':
+                    $ref: '#/components/responses/ValidationFailed'
+
+    /safe-zones:
+        get:
+            tags: [SafeZones]
+            summary: Daftar Posko & Titik Aman aktif
+            description: Mengembalikan seluruh posko siaga, titik evakuasi, pos kesehatan, dan dapur umum yang aktif.
+            responses:
+                '200':
+                    description: Daftar titik aman aktif.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [data]
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                id:
+                                                    type: string
+                                                    format: uuid
+                                                name:
+                                                    type: string
+                                                type:
+                                                    type: string
+                                                    enum:
+                                                        [
+                                                            posko,
+                                                            evacuation,
+                                                            medical,
+                                                            logistics,
+                                                        ]
+                                                type_label:
+                                                    type: string
+                                                latitude:
+                                                    type: number
+                                                longitude:
+                                                    type: number
+                                                address:
+                                                    type: string
+                                                    nullable: true
+                                                capacity:
+                                                    type: integer
+                                                    nullable: true
+
+    /watch-areas:
+        get:
+            tags: [WatchAreas]
+            summary: Daftar area pantauan pribadi (maksimal 5)
+            security:
+                - bearerAuth: []
+            responses:
+                '200':
+                    description: Daftar area pantauan milik pengguna.
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
+        post:
+            tags: [WatchAreas]
+            summary: Simpan area pantauan baru (geofence)
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [label, latitude, longitude]
+                            properties:
+                                label:
+                                    type: string
+                                    maxLength: 80
+                                    example: Rumah
+                                latitude:
+                                    type: number
+                                    example: -6.2088
+                                longitude:
+                                    type: number
+                                    example: 106.8456
+                                radius_meters:
+                                    type: integer
+                                    minimum: 500
+                                    maximum: 10000
+                                    default: 3000
+            responses:
+                '201':
+                    description: Area pantauan berhasil disimpan.
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
+                '422':
+                    $ref: '#/components/responses/ValidationFailed'
+
+    /watch-areas/{watchArea}:
+        delete:
+            tags: [WatchAreas]
+            summary: Hapus area pantauan pribadi
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: watchArea
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                '200':
+                    description: Area pantauan dihapus.
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
+
+    /alerts:
+        get:
+            tags: [WatchAreas]
+            summary: Daftar notifikasi geofence insiden terverifikasi di area pantauan
+            security:
+                - bearerAuth: []
+            responses:
+                '200':
+                    description: Daftar notifikasi terbaru milik pengguna.
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'
+
+    /alerts/{alert}/read:
+        post:
+            tags: [WatchAreas]
+            summary: Tandai notifikasi geofence sudah dibaca
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: alert
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                '200':
+                    description: Notifikasi ditandai sudah dibaca.
+                '401':
+                    $ref: '#/components/responses/Unauthenticated'

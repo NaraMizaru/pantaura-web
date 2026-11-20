@@ -1,15 +1,20 @@
 <?php
 
+use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
+use App\Enums\SafeZoneType;
+use App\Enums\UrgentNeed;
 use App\Models\Incident;
+use App\Models\SafeZone;
 use App\Models\User;
+use App\Services\IncidentService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 test('citizen can register, login, fetch profile, and logout via api v1', function () {
     $register = $this->postJson('/api/v1/auth/register', [
         'name' => 'Warga Baru',
-        'email' => 'warga@siagakita.test',
+        'email' => 'warga@pantaura.test',
         'password' => 'password123',
         'password_confirmation' => 'password123',
         'device_name' => 'flutter-test',
@@ -23,7 +28,7 @@ test('citizen can register, login, fetch profile, and logout via api v1', functi
     $this->withToken($token)
         ->getJson('/api/v1/auth/me')
         ->assertOk()
-        ->assertJsonPath('data.email', 'warga@siagakita.test');
+        ->assertJsonPath('data.email', 'warga@pantaura.test');
 
     $this->withToken($token)
         ->postJson('/api/v1/auth/logout')
@@ -189,4 +194,87 @@ test('resolved incidents are hidden from default public map and list unless filt
         ->assertOk()
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.id', $resolvedIncident->id);
+});
+
+test('citizen can find nearby incidents, toggle crowd confirmation, and view active safe zones', function () {
+    $citizen = User::factory()->create();
+    $token = $citizen->createToken('test')->plainTextToken;
+
+    $nearIncident = Incident::factory()->verified()->create([
+        'disaster_type' => DisasterType::Flood,
+        'latitude' => -6.2088000,
+        'longitude' => 106.8456000,
+        'urgent_needs' => [UrgentNeed::RubberBoat->value],
+    ]);
+
+    Incident::factory()->verified()->create([
+        'disaster_type' => DisasterType::Flood,
+        'latitude' => -6.9175000,
+        'longitude' => 107.6191000,
+    ]);
+
+    SafeZone::create([
+        'name' => 'Posko Utama Jakarta',
+        'type' => SafeZoneType::Posko,
+        'latitude' => -6.2090000,
+        'longitude' => 106.8460000,
+        'is_active' => true,
+    ]);
+
+    $this->getJson('/api/v1/incidents/nearby?lat=-6.2089&lng=106.8457&radius=500')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $nearIncident->id);
+
+    $this->withToken($token)
+        ->postJson("/api/v1/incidents/{$nearIncident->id}/confirm")
+        ->assertOk()
+        ->assertJsonPath('data.confirmed', true)
+        ->assertJsonPath('data.confirmations_count', 1);
+
+    $this->withToken($token)
+        ->postJson("/api/v1/incidents/{$nearIncident->id}/confirm")
+        ->assertOk()
+        ->assertJsonPath('data.confirmed', false)
+        ->assertJsonPath('data.confirmations_count', 0);
+
+    $this->getJson('/api/v1/safe-zones')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.name', 'Posko Utama Jakarta');
+});
+
+test('citizen receives geofence alert when an incident in watch area becomes verified', function () {
+    $citizen = User::factory()->create();
+    $admin = User::factory()->admin()->create();
+    $token = $citizen->createToken('test')->plainTextToken;
+
+    $watchResponse = $this->withToken($token)->postJson('/api/v1/watch-areas', [
+        'label' => 'Rumah',
+        'latitude' => -6.2088,
+        'longitude' => 106.8456,
+        'radius_meters' => 2000,
+    ]);
+
+    $watchResponse->assertCreated()
+        ->assertJsonPath('data.label', 'Rumah');
+
+    $incident = Incident::factory()->create([
+        'latitude' => -6.2095,
+        'longitude' => 106.8460,
+        'status' => IncidentStatus::Unverified,
+    ]);
+
+    app(IncidentService::class)->transitionStatus($incident, IncidentStatus::Verified, $admin);
+
+    $alertsResponse = $this->withToken($token)->getJson('/api/v1/alerts');
+    $alertsResponse->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.incident.id', $incident->id);
+
+    $alertId = $alertsResponse->json('data.0.id');
+
+    $this->withToken($token)
+        ->postJson("/api/v1/alerts/{$alertId}/read")
+        ->assertOk();
 });

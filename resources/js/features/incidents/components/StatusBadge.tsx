@@ -3,7 +3,7 @@ import type {
     IncidentStatus,
     ModerationStatus,
     ResolutionStatus,
-} from '@/types/siagakita';
+} from '@/types/pantaura';
 
 const INCIDENT_STATUS_META: Record<
     IncidentStatus,

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { MapPin } from 'lucide-react';
+import { CheckCircle2, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { IncidentStatusBadge } from '@/features/incidents/components/StatusBadge';
 import { DISASTER_TYPE_LABELS } from '@/features/incidents/lib/disaster';
@@ -7,7 +7,7 @@ import {
     formatIncidentDate,
     STATUS_STRIPE_COLOR,
 } from '@/features/public-map/constants';
-import type { IncidentMarker } from '@/types/siagakita';
+import type { IncidentMarker } from '@/types/pantaura';
 
 export function IncidentCard({
     incident,
@@ -38,9 +38,20 @@ export function IncidentCard({
                         {DISASTER_TYPE_LABELS[incident.disaster_type]}
                     </span>
                 </div>
-                <span className="rounded-full bg-[#eff4ff] px-2.5 py-0.5 text-xs font-semibold text-[#004b73] tabular-nums">
-                    {incident.reports_count} laporan warga
-                </span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                    {(incident.confirmations_count ?? 0) > 0 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 tabular-nums">
+                            <CheckCircle2
+                                className="size-3"
+                                aria-hidden="true"
+                            />
+                            {incident.confirmations_count} konfirmasi warga
+                        </span>
+                    )}
+                    <span className="rounded-full bg-[#eff4ff] px-2.5 py-0.5 text-xs font-semibold text-[#004b73] tabular-nums">
+                        {incident.reports_count} laporan warga
+                    </span>
+                </div>
             </div>
 
             <h3 className="mt-3 text-base font-bold text-[#0b1c30]">
@@ -60,6 +71,23 @@ export function IncidentCard({
             <p className="mt-2 line-clamp-2 text-sm text-[#3f4850]">
                 {incident.description}
             </p>
+
+            {incident.urgent_needs_labels &&
+                incident.urgent_needs_labels.length > 0 && (
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                        <span className="text-[11px] font-semibold text-[#707881]">
+                            Kebutuhan:
+                        </span>
+                        {incident.urgent_needs_labels.map((label) => (
+                            <span
+                                key={label}
+                                className="rounded-md bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700"
+                            >
+                                {label}
+                            </span>
+                        ))}
+                    </div>
+                )}
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
                 <span className="text-xs text-[#707881]">

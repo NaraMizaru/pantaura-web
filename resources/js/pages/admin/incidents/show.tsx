@@ -1,5 +1,6 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, MapPin } from 'lucide-react';
+import { useState } from 'react';
 import { DisasterMap } from '@/features/incidents/components/DisasterMap';
 import { MediaGallery } from '@/features/incidents/components/MediaGallery';
 import {
@@ -7,6 +8,7 @@ import {
     ModerationStatusBadge,
     ResolutionStatusBadge,
 } from '@/features/incidents/components/StatusBadge';
+import { URGENT_NEED_OPTIONS } from '@/features/incidents/lib/disaster';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type {
@@ -15,7 +17,8 @@ import type {
     MediaItem,
     ModerationStatus,
     ResolutionStatus,
-} from '@/types/siagakita';
+    UrgentNeed,
+} from '@/types/pantaura';
 
 type AdminIncidentShowProps = {
     incident: {
@@ -23,6 +26,8 @@ type AdminIncidentShowProps = {
         title: string;
         disaster_type: DisasterType;
         disaster_type_label: string;
+        urgent_needs?: UrgentNeed[];
+        confirmations_count?: number;
         description: string;
         latitude: number;
         longitude: number;
@@ -63,6 +68,30 @@ type AdminIncidentShowProps = {
 export default function AdminIncidentShow({
     incident,
 }: AdminIncidentShowProps) {
+    const [selectedNeeds, setSelectedNeeds] = useState<UrgentNeed[]>(
+        incident.urgent_needs ?? [],
+    );
+    const [savingNeeds, setSavingNeeds] = useState(false);
+
+    const toggleNeed = (need: UrgentNeed) => {
+        setSelectedNeeds((prev) =>
+            prev.includes(need)
+                ? prev.filter((item) => item !== need)
+                : [...prev, need],
+        );
+    };
+
+    const saveNeeds = () => {
+        setSavingNeeds(true);
+        router.patch(
+            `/admin/incidents/${incident.id}/needs`,
+            { urgent_needs: selectedNeeds },
+            {
+                preserveScroll: true,
+                onFinish: () => setSavingNeeds(false),
+            },
+        );
+    };
     return (
         <>
             <Head title={incident.title} />
@@ -109,8 +138,7 @@ export default function AdminIncidentShow({
                             id: incident.id,
                             title: incident.title,
                             disaster_type: incident.disaster_type,
-                            disaster_type_label:
-                                incident.disaster_type_label,
+                            disaster_type_label: incident.disaster_type_label,
                             description: incident.description,
                             latitude: incident.latitude,
                             longitude: incident.longitude,
@@ -124,6 +152,53 @@ export default function AdminIncidentShow({
                     zoom={15}
                     className="h-[260px] w-full overflow-hidden rounded-lg border"
                 />
+
+                <Card>
+                    <CardHeader className="pb-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <CardTitle className="text-base">
+                                Kebutuhan Mendesak &amp; Konfirmasi Warga
+                            </CardTitle>
+                            <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                                {incident.confirmations_count ?? 0} konfirmasi
+                                warga
+                            </span>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <div className="flex flex-wrap gap-2">
+                            {URGENT_NEED_OPTIONS.map((option) => {
+                                const active = selectedNeeds.includes(
+                                    option.value,
+                                );
+                                return (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => toggleNeed(option.value)}
+                                        className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                                            active
+                                                ? 'border-rose-600 bg-rose-600 text-white'
+                                                : 'border-border bg-background text-foreground hover:bg-muted'
+                                        }`}
+                                    >
+                                        {option.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <Button
+                            type="button"
+                            size="sm"
+                            disabled={savingNeeds}
+                            onClick={saveNeeds}
+                        >
+                            {savingNeeds
+                                ? 'Menyimpan...'
+                                : 'Simpan Kebutuhan Mendesak'}
+                        </Button>
+                    </CardContent>
+                </Card>
 
                 <section className="space-y-3">
                     <h2 className="text-lg font-semibold">

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1;
 
 use App\Enums\DisasterType;
+use App\Enums\UrgentNeed;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,6 +23,8 @@ class StoreReportRequest extends FormRequest
     {
         return [
             'disaster_type' => ['sometimes', Rule::enum(DisasterType::class)],
+            'urgent_needs' => ['sometimes', 'array', 'max:6'],
+            'urgent_needs.*' => ['required', Rule::enum(UrgentNeed::class)],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
             'description' => ['required', 'string', 'min:10', 'max:2000'],

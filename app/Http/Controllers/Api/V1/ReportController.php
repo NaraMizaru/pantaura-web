@@ -42,6 +42,9 @@ class ReportController extends Controller
                 'disaster_type' => isset($validated['disaster_type'])
                     ? DisasterType::from((string) $validated['disaster_type'])
                     : DisasterType::Flood,
+                'urgent_needs' => is_array($validated['urgent_needs'] ?? null)
+                    ? array_values(array_map('strval', $validated['urgent_needs']))
+                    : [],
             ],
             $files,
         );

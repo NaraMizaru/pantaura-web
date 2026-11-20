@@ -1,7 +1,7 @@
 import { ChevronDown, Filter } from 'lucide-react';
 import { useState } from 'react';
 import { STATUS_FILTER_OPTIONS } from '@/features/public-map/constants';
-import type { IncidentStatus, StatusCounts } from '@/types/siagakita';
+import type { IncidentStatus, StatusCounts } from '@/types/pantaura';
 
 export function StatusFilterBar({
     activeStatus,

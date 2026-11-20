@@ -5,6 +5,7 @@ import {
     LayoutGrid,
     Map,
     MapPin,
+    ShieldPlus,
     Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -42,6 +43,11 @@ const mainNavItems: NavItem[] = [
         title: 'Verifikasi Selesai',
         href: '/admin/resolutions',
         icon: CheckCircle2,
+    },
+    {
+        title: 'Posko & Titik Aman',
+        href: '/admin/safe-zones',
+        icon: ShieldPlus,
     },
     {
         title: 'Pengguna',

@@ -6,7 +6,9 @@ namespace App\Services;
 
 use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
+use App\Enums\UrgentNeed;
 use App\Models\Incident;
+use App\Models\IncidentConfirmation;
 use App\Models\IncidentStatusHistory;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -67,9 +69,9 @@ class IncidentService
             );
         }
 
-        return DB::transaction(function () use ($incident, $newStatus, $actor, $reason): Incident {
-            $previousStatus = $incident->status;
+        $previousStatus = $incident->status;
 
+        $updated = DB::transaction(function () use ($incident, $newStatus, $actor, $reason, $previousStatus): Incident {
             $attributes = ['status' => $newStatus];
 
             if ($newStatus === IncidentStatus::Verified && $incident->verified_at === null) {
@@ -94,9 +96,67 @@ class IncidentService
 
             return $incident->refresh();
         });
+
+        if ($previousStatus !== IncidentStatus::Verified && $newStatus === IncidentStatus::Verified) {
+            app(WatchAreaAlertService::class)->notifyForVerifiedIncident($updated);
+        }
+
+        return $updated;
     }
 
-    private function haversineKm(float $lat1, float $lon1, float $lat2, float $lon2): float
+    /**
+     * Toggle a citizen confirmation ("Konfirmasi Warga") on an active incident.
+     *
+     * @return array{confirmed: bool, confirmations_count: int}
+     */
+    public function toggleConfirmation(Incident $incident, User $user): array
+    {
+        if (! $incident->status->isPubliclyVisible() || $incident->status === IncidentStatus::Resolved) {
+            throw new InvalidArgumentException('Insiden tidak dapat dikonfirmasi pada status saat ini.');
+        }
+
+        return DB::transaction(function () use ($incident, $user): array {
+            $existing = IncidentConfirmation::query()
+                ->where('incident_id', $incident->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($existing !== null) {
+                $existing->delete();
+                $confirmed = false;
+            } else {
+                IncidentConfirmation::create([
+                    'incident_id' => $incident->id,
+                    'user_id' => $user->id,
+                ]);
+                $confirmed = true;
+            }
+
+            return [
+                'confirmed' => $confirmed,
+                'confirmations_count' => $incident->confirmations()->count(),
+            ];
+        });
+    }
+
+    /**
+     * @param  list<string>  $needs
+     */
+    public function updateUrgentNeeds(Incident $incident, array $needs): Incident
+    {
+        $valid = array_values(array_unique(array_filter(
+            $needs,
+            fn (string $need): bool => UrgentNeed::tryFrom($need) !== null,
+        )));
+
+        $incident->update([
+            'urgent_needs' => $valid,
+        ]);
+
+        return $incident->refresh();
+    }
+
+    public function haversineKm(float $lat1, float $lon1, float $lat2, float $lon2): float
     {
         $earthRadiusKm = 6371.0;
         $dLat = deg2rad($lat2 - $lat1);

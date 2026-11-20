@@ -8,11 +8,15 @@ use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
 use App\Enums\ModerationStatus;
 use App\Enums\ResolutionStatus;
+use App\Enums\SafeZoneType;
+use App\Enums\UrgentNeed;
 use App\Enums\UserRole;
 use App\Models\Incident;
+use App\Models\IncidentConfirmation;
 use App\Models\IncidentStatusHistory;
 use App\Models\Report;
 use App\Models\ResolutionSubmission;
+use App\Models\SafeZone;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -23,13 +27,13 @@ class DummyDataSeeder extends Seeder
     {
         $admin = User::query()->where('role', UserRole::Admin->value)->first()
             ?? User::factory()->admin()->create([
-                'name' => 'Admin SiagaKita',
-                'email' => 'admin@siagakita.test',
+                'name' => 'Admin Pantaura',
+                'email' => 'admin@pantaura.test',
                 'password' => Hash::make('password'),
             ]);
 
         $citizenA = User::query()->firstOrCreate(
-            ['email' => 'budi@siagakita.test'],
+            ['email' => 'budi@pantaura.test'],
             [
                 'name' => 'Budi Santoso',
                 'password' => Hash::make('password'),
@@ -39,7 +43,7 @@ class DummyDataSeeder extends Seeder
         );
 
         $citizenB = User::query()->firstOrCreate(
-            ['email' => 'siti@siagakita.test'],
+            ['email' => 'siti@pantaura.test'],
             [
                 'name' => 'Siti Rahma',
                 'password' => Hash::make('password'),
@@ -49,7 +53,7 @@ class DummyDataSeeder extends Seeder
         );
 
         $citizenC = User::query()->firstOrCreate(
-            ['email' => 'andi@siagakita.test'],
+            ['email' => 'andi@pantaura.test'],
             [
                 'name' => 'Andi Pratama',
                 'password' => Hash::make('password'),
@@ -296,5 +300,49 @@ class DummyDataSeeder extends Seeder
             'reviewed_by' => $admin->id,
             'reviewed_at' => now()->subHours(7),
         ]);
+
+        $resolutionPendingIncident->update([
+            'urgent_needs' => [
+                UrgentNeed::RubberBoat->value,
+                UrgentNeed::CleanWater->value,
+            ],
+        ]);
+
+        IncidentConfirmation::firstOrCreate([
+            'incident_id' => $resolutionPendingIncident->id,
+            'user_id' => $citizenA->id,
+        ]);
+        IncidentConfirmation::firstOrCreate([
+            'incident_id' => $resolutionPendingIncident->id,
+            'user_id' => $citizenB->id,
+        ]);
+
+        SafeZone::firstOrCreate(
+            ['name' => 'Posko Siaga Kelurahan Kampung Melayu'],
+            [
+                'type' => SafeZoneType::Posko,
+                'description' => 'Posko evakuasi warga terdampak banjir dengan tenda & dapur umum.',
+                'latitude' => -6.2255000,
+                'longitude' => 106.8682000,
+                'address' => 'Jl. Jatinegara Barat, Jakarta Timur',
+                'capacity' => 250,
+                'is_active' => true,
+                'created_by' => $admin->id,
+            ]
+        );
+
+        SafeZone::firstOrCreate(
+            ['name' => 'Pos Kesehatan Lapangan Sudirman'],
+            [
+                'type' => SafeZoneType::Medical,
+                'description' => 'Layanan medis darurat dan pemeriksaan kesehatan gratis.',
+                'latitude' => -6.2072000,
+                'longitude' => 106.8235000,
+                'address' => 'Jl. Jenderal Sudirman Kav. 21, Jakarta Pusat',
+                'capacity' => 80,
+                'is_active' => true,
+                'created_by' => $admin->id,
+            ]
+        );
     }
 }

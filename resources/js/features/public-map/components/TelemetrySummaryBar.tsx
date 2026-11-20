@@ -1,5 +1,5 @@
 import { Droplets, Layers, MapPin, Users } from 'lucide-react';
-import type { StatusCounts } from '@/types/siagakita';
+import type { StatusCounts } from '@/types/pantaura';
 
 export function TelemetrySummaryBar({
     statusCounts,

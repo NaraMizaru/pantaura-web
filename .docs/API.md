@@ -1,6 +1,6 @@
-# SiagaKita REST API Documentation (`v1`)
+# Pantaura REST API Documentation (`v1`)
 
-Dokumentasi resmi untuk REST API `/api/v1` platform pelaporan dan pemantauan bencana **SiagaKita**.
+Dokumentasi resmi untuk REST API `/api/v1` platform pelaporan dan pemantauan bencana **Pantaura**.
 
 - **Base URL (Local Docker):** `http://localhost:8080/api/v1`
 - **Interactive Swagger UI:** [`/api/docs`](http://localhost:8080/api/docs)
@@ -29,13 +29,13 @@ Accept: application/json
 
 Semua request ke `/api/*` otomatis merender respons JSON:
 
-| Status Code | Keterangan | Contoh Bentuk Respons |
-|---|---|---|
-| `200` / `201` | Berhasil / Resource terbuat | `{ "data": ... }` atau `{ "message": ..., "data": ... }` |
-| `401` | Belum terautentikasi / token tidak valid | `{ "message": "Unauthenticated." }` |
-| `404` | Insiden tidak ditemukan atau berstatus `rejected` | `{ "message": "..." }` |
-| `422` | Validasi input gagal atau aturan status bisnis ditolak | `{ "message": "...", "errors": { "field": ["..."] } }` |
-| `429` | Rate limit terlampaui (`throttle:10,1` pada auth) | `{ "message": "Too Many Attempts." }` |
+| Status Code   | Keterangan                                             | Contoh Bentuk Respons                                    |
+| ------------- | ------------------------------------------------------ | -------------------------------------------------------- |
+| `200` / `201` | Berhasil / Resource terbuat                            | `{ "data": ... }` atau `{ "message": ..., "data": ... }` |
+| `401`         | Belum terautentikasi / token tidak valid               | `{ "message": "Unauthenticated." }`                      |
+| `404`         | Insiden tidak ditemukan atau berstatus `rejected`      | `{ "message": "..." }`                                   |
+| `422`         | Validasi input gagal atau aturan status bisnis ditolak | `{ "message": "...", "errors": { "field": ["..."] } }`   |
+| `429`         | Rate limit terlampaui (`throttle:10,1` pada auth)      | `{ "message": "Too Many Attempts." }`                    |
 
 ---
 
@@ -43,30 +43,30 @@ Semua request ke `/api/*` otomatis merender respons JSON:
 
 ### Auth
 
-| Method | Endpoint | Auth | Deskripsi |
-|---|---|---|---|
+| Method | Endpoint         | Auth                     | Deskripsi                                         |
+| ------ | ---------------- | ------------------------ | ------------------------------------------------- |
 | `POST` | `/auth/register` | Public (`throttle:10,1`) | Registrasi akun `citizen` baru + kembalikan token |
-| `POST` | `/auth/login` | Public (`throttle:10,1`) | Login email & password + kembalikan token |
-| `POST` | `/auth/logout` | Bearer Token | Cabut token Sanctum yang sedang aktif |
-| `GET` | `/auth/me` | Bearer Token | Ambil profil user yang sedang login |
+| `POST` | `/auth/login`    | Public (`throttle:10,1`) | Login email & password + kembalikan token         |
+| `POST` | `/auth/logout`   | Bearer Token             | Cabut token Sanctum yang sedang aktif             |
+| `GET`  | `/auth/me`       | Bearer Token             | Ambil profil user yang sedang login               |
 
 ### Incidents (Public Monitoring)
 
-| Method | Endpoint | Auth | Deskripsi |
-|---|---|---|---|
-| `GET` | `/incidents` | Public | Daftar insiden terpaginasi (opsional `?status=`, `?page=`) |
-| `GET` | `/incidents/map` | Public | Daftar marker insiden untuk peta (opsional `?status=`) |
-| `GET` | `/incidents/{incident}` | Public | Detail insiden, laporan terkait, resolusi, & riwayat status |
+| Method | Endpoint                | Auth   | Deskripsi                                                   |
+| ------ | ----------------------- | ------ | ----------------------------------------------------------- |
+| `GET`  | `/incidents`            | Public | Daftar insiden terpaginasi (opsional `?status=`, `?page=`)  |
+| `GET`  | `/incidents/map`        | Public | Daftar marker insiden untuk peta (opsional `?status=`)      |
+| `GET`  | `/incidents/{incident}` | Public | Detail insiden, laporan terkait, resolusi, & riwayat status |
 
 > Insiden berstatus `rejected` tidak pernah ditampilkan di endpoint publik (`index`, `map`, maupun `show`).
 
 ### Reports & Resolutions (Authenticated)
 
-| Method | Endpoint | Auth | Deskripsi |
-|---|---|---|---|
-| `POST` | `/reports` | Bearer Token | Kirim laporan bencana baru + 1–5 file media bukti |
-| `GET` | `/reports/my` | Bearer Token | Daftar terpaginasi laporan milik user yang login |
-| `POST` | `/incidents/{incident}/reports` | Bearer Token | Tambah laporan baru ke insiden aktif yang sudah ada |
+| Method | Endpoint                            | Auth         | Deskripsi                                             |
+| ------ | ----------------------------------- | ------------ | ----------------------------------------------------- |
+| `POST` | `/reports`                          | Bearer Token | Kirim laporan bencana baru + 1–5 file media bukti     |
+| `GET`  | `/reports/my`                       | Bearer Token | Daftar terpaginasi laporan milik user yang login      |
+| `POST` | `/incidents/{incident}/reports`     | Bearer Token | Tambah laporan baru ke insiden aktif yang sudah ada   |
 | `POST` | `/incidents/{incident}/resolutions` | Bearer Token | Ajukan bukti penyelesaian/kondisi pulih untuk insiden |
 
 ---
@@ -91,6 +91,7 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
 ### Mengirim Laporan Bencana Baru (`multipart/form-data`)
 
 Aturan validasi `POST /api/v1/reports`:
+
 - `disaster_type`: opsional, salah satu `flood`, `earthquake`, `landslide`, `fire` (default `flood`)
 - `latitude`: wajib, numerik antara `-90` hingga `90`
 - `longitude`: wajib, numerik antara `-180` hingga `180`
@@ -113,11 +114,14 @@ curl -X POST http://localhost:8080/api/v1/reports \
 ### Mengambil Daftar Marker Peta (JavaScript `fetch`)
 
 ```javascript
-const response = await fetch('http://localhost:8080/api/v1/incidents/map?status=verified&type=flood', {
-  headers: {
-    Accept: 'application/json',
-  },
-});
+const response = await fetch(
+    'http://localhost:8080/api/v1/incidents/map?status=verified&type=flood',
+    {
+        headers: {
+            Accept: 'application/json',
+        },
+    },
+);
 
 const { data } = await response.json();
 console.log(data);

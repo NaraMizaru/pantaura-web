@@ -3,7 +3,7 @@ FROM php:8.5-alpine
 ARG PHP_EXTS="bcmath ctype intl fileinfo mbstring pdo pdo_mysql pdo_pgsql pgsql gd pcntl zip"
 ARG PHP_PECL_EXTS="redis"
 
-WORKDIR /opt/apps/siagakita
+WORKDIR /opt/apps/pantaura
 
 RUN apk add --no-cache \
         ${PHPIZE_DEPS} \

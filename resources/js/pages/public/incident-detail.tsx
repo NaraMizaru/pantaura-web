@@ -26,7 +26,7 @@ import type {
     MediaItem,
     ModerationStatus,
     ResolutionStatus,
-} from '@/types/siagakita';
+} from '@/types/pantaura';
 
 type IncidentDetailProps = {
     incident: {
@@ -34,6 +34,8 @@ type IncidentDetailProps = {
         title: string;
         disaster_type: DisasterType;
         disaster_type_label: string;
+        urgent_needs?: string[];
+        urgent_needs_labels?: string[];
         description: string;
         latitude: number;
         longitude: number;
@@ -41,6 +43,7 @@ type IncidentDetailProps = {
         status: IncidentStatus;
         status_label: string;
         reports_count: number;
+        confirmations_count?: number;
         verified_at: string | null;
         resolved_at: string | null;
         created_at: string | null;
@@ -93,7 +96,9 @@ function getInitials(name: string): string {
         .join('');
 }
 
-export default function PublicIncidentDetail({ incident }: IncidentDetailProps) {
+export default function PublicIncidentDetail({
+    incident,
+}: IncidentDetailProps) {
     const handleShare = async () => {
         try {
             await navigator.clipboard.writeText(window.location.href);
@@ -121,7 +126,7 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                                 />
                             </span>
                             <span className="text-base font-bold text-[#006194]">
-                                SiagaKita
+                                Pantaura
                             </span>
                         </Link>
 
@@ -183,6 +188,12 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                                 <span className="rounded-full bg-[#e5eeff] px-2.5 py-0.5 text-xs font-semibold text-[#004b73]">
                                     {incident.reports_count} Laporan Warga
                                 </span>
+                                {(incident.confirmations_count ?? 0) > 0 && (
+                                    <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                                        ✓ Dikonfirmasi{' '}
+                                        {incident.confirmations_count} warga
+                                    </span>
+                                )}
                             </div>
                             <span className="text-xs text-[#3f4850]">
                                 Dilaporkan {formatDateTime(incident.created_at)}
@@ -195,6 +206,25 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                         <p className="mt-2 text-sm leading-relaxed text-[#3f4850]">
                             {incident.description}
                         </p>
+
+                        {incident.urgent_needs_labels &&
+                            incident.urgent_needs_labels.length > 0 && (
+                                <div className="mt-3 flex flex-wrap items-center gap-2">
+                                    <span className="text-xs font-semibold text-[#3f4850]">
+                                        Kebutuhan Mendesak:
+                                    </span>
+                                    {incident.urgent_needs_labels.map(
+                                        (label) => (
+                                            <span
+                                                key={label}
+                                                className="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700"
+                                            >
+                                                {label}
+                                            </span>
+                                        ),
+                                    )}
+                                </div>
+                            )}
 
                         <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-[#3f4850]">
                             {incident.address && (
@@ -289,10 +319,57 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                                         Ingin ikut melapor?
                                     </span>{' '}
                                     Laporan tambahan dan bukti kondisi pulih
-                                    dikirim melalui aplikasi mobile SiagaKita.
+                                    dikirim melalui aplikasi mobile Pantaura.
                                     Web ini hanya untuk pemantauan publik.
                                 </p>
                             </div>
+
+                            {(() => {
+                                const beforeImage = incident.reports
+                                    .flatMap((r) => r.media)
+                                    .find((m) => m.file_type === 'image');
+                                const afterImage = incident.resolutions
+                                    .flatMap((r) => r.media)
+                                    .find((m) => m.file_type === 'image');
+
+                                if (!beforeImage || !afterImage) {
+                                    return null;
+                                }
+
+                                return (
+                                    <Card className="border-emerald-200/80 bg-white shadow-xs">
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-base font-bold text-[#0b1c30]">
+                                                Perbandingan Kondisi: Saat
+                                                Kejadian vs Pemulihan (Before /
+                                                After)
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="grid gap-4 sm:grid-cols-2">
+                                            <div className="space-y-2">
+                                                <span className="inline-block rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-700">
+                                                    Saat Kejadian (Before)
+                                                </span>
+                                                <img
+                                                    src={beforeImage.url}
+                                                    alt="Foto kondisi saat kejadian"
+                                                    className="aspect-video w-full rounded-lg border object-cover"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <span className="inline-block rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                                                    Kondisi Pemulihan (After)
+                                                </span>
+                                                <img
+                                                    src={afterImage.url}
+                                                    alt="Foto kondisi pemulihan"
+                                                    className="aspect-video w-full rounded-lg border object-cover"
+                                                />
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })()}
 
                             <section className="space-y-3">
                                 <h2 className="flex items-center gap-2 text-lg font-bold text-[#0b1c30]">
@@ -485,7 +562,8 @@ export default function PublicIncidentDetail({ incident }: IncidentDetailProps) 
                                                         </span>
                                                     </div>
                                                     <p className="text-xs text-[#3f4850]">
-                                                        oleh {history.actor_name}
+                                                        oleh{' '}
+                                                        {history.actor_name}
                                                     </p>
                                                     {history.reason && (
                                                         <p className="text-xs text-[#0b1c30]">

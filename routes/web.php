@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IncidentManagementController;
 use App\Http\Controllers\Admin\ReportManagementController;
 use App\Http\Controllers\Admin\ResolutionVerificationController;
+use App\Http\Controllers\Admin\SafeZoneManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Public\IncidentMapController;
 use Illuminate\Http\Request;
@@ -37,6 +38,12 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         Route::get('/incidents', [IncidentManagementController::class, 'index'])->name('incidents.index');
         Route::get('/incidents/{incident}', [IncidentManagementController::class, 'show'])->name('incidents.show');
+        Route::patch('/incidents/{incident}/needs', [IncidentManagementController::class, 'updateNeeds'])->name('incidents.update-needs');
+
+        Route::get('/safe-zones', [SafeZoneManagementController::class, 'index'])->name('safe-zones.index');
+        Route::post('/safe-zones', [SafeZoneManagementController::class, 'store'])->name('safe-zones.store');
+        Route::patch('/safe-zones/{safeZone}', [SafeZoneManagementController::class, 'update'])->name('safe-zones.update');
+        Route::delete('/safe-zones/{safeZone}', [SafeZoneManagementController::class, 'destroy'])->name('safe-zones.destroy');
 
         Route::get('/resolutions', [ResolutionVerificationController::class, 'index'])->name('resolutions.index');
         Route::post('/resolutions/{resolution}/approve', [ResolutionVerificationController::class, 'approve'])->name('resolutions.approve');

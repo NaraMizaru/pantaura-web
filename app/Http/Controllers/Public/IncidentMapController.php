@@ -6,8 +6,10 @@ namespace App\Http\Controllers\Public;
 
 use App\Enums\DisasterType;
 use App\Enums\IncidentStatus;
+use App\Enums\UrgentNeed;
 use App\Http\Controllers\Controller;
 use App\Models\Incident;
+use App\Models\SafeZone;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,22 +36,49 @@ class IncidentMapController extends Controller
                 fn ($q) => $q->where('status', '!=', IncidentStatus::Resolved->value)
             )
             ->when($activeType !== null, fn ($q) => $q->where('disaster_type', $activeType->value))
-            ->withCount('reports')
+            ->withCount(['reports', 'confirmations'])
             ->latest()
             ->get()
-            ->map(fn (Incident $incident): array => [
-                'id' => $incident->id,
-                'title' => $incident->title,
-                'disaster_type' => $incident->disaster_type->value,
-                'disaster_type_label' => $incident->disaster_type->label(),
-                'description' => $incident->description,
-                'latitude' => $incident->latitude,
-                'longitude' => $incident->longitude,
-                'address' => $incident->address,
-                'status' => $incident->status->value,
-                'status_label' => $incident->status->label(),
-                'reports_count' => $incident->reports_count ?? 0,
-                'created_at' => $incident->created_at?->toIso8601String(),
+            ->map(function (Incident $incident): array {
+                /** @var list<string> $needs */
+                $needs = is_array($incident->urgent_needs) ? array_values($incident->urgent_needs) : [];
+
+                return [
+                    'id' => $incident->id,
+                    'title' => $incident->title,
+                    'disaster_type' => $incident->disaster_type->value,
+                    'disaster_type_label' => $incident->disaster_type->label(),
+                    'urgent_needs' => $needs,
+                    'urgent_needs_labels' => array_values(array_filter(array_map(
+                        fn (string $need): ?string => UrgentNeed::tryFrom($need)?->label(),
+                        $needs,
+                    ))),
+                    'description' => $incident->description,
+                    'latitude' => $incident->latitude,
+                    'longitude' => $incident->longitude,
+                    'address' => $incident->address,
+                    'status' => $incident->status->value,
+                    'status_label' => $incident->status->label(),
+                    'reports_count' => $incident->reports_count ?? 0,
+                    'confirmations_count' => $incident->confirmations_count ?? 0,
+                    'created_at' => $incident->created_at?->toIso8601String(),
+                ];
+            });
+
+        $safeZones = SafeZone::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(fn (SafeZone $zone): array => [
+                'id' => $zone->id,
+                'name' => $zone->name,
+                'type' => $zone->type->value,
+                'type_label' => $zone->type->label(),
+                'description' => $zone->description,
+                'latitude' => $zone->latitude,
+                'longitude' => $zone->longitude,
+                'address' => $zone->address,
+                'capacity' => $zone->capacity,
             ]);
 
         $statusCounts = Incident::query()
@@ -75,6 +104,7 @@ class IncidentMapController extends Controller
 
         return Inertia::render('public/map', [
             'incidents' => $incidents,
+            'safeZones' => $safeZones,
             'activeStatus' => $activeStatus,
             'activeType' => $activeType?->value,
             'statusCounts' => [
@@ -100,7 +130,7 @@ class IncidentMapController extends Controller
             abort(404);
         }
 
-        $incident->loadCount('reports');
+        $incident->loadCount(['reports', 'confirmations']);
         $incident->load([
             'reports.reporter:id,name',
             'reports.media',
@@ -109,12 +139,20 @@ class IncidentMapController extends Controller
             'statusHistories.actor:id,name',
         ]);
 
+        /** @var list<string> $needs */
+        $needs = is_array($incident->urgent_needs) ? array_values($incident->urgent_needs) : [];
+
         return Inertia::render('public/incident-detail', [
             'incident' => [
                 'id' => $incident->id,
                 'title' => $incident->title,
                 'disaster_type' => $incident->disaster_type->value,
                 'disaster_type_label' => $incident->disaster_type->label(),
+                'urgent_needs' => $needs,
+                'urgent_needs_labels' => array_values(array_filter(array_map(
+                    fn (string $need): ?string => UrgentNeed::tryFrom($need)?->label(),
+                    $needs,
+                ))),
                 'description' => $incident->description,
                 'latitude' => $incident->latitude,
                 'longitude' => $incident->longitude,
@@ -122,6 +160,7 @@ class IncidentMapController extends Controller
                 'status' => $incident->status->value,
                 'status_label' => $incident->status->label(),
                 'reports_count' => $incident->reports_count ?? 0,
+                'confirmations_count' => $incident->confirmations_count ?? 0,
                 'verified_at' => $incident->verified_at?->toIso8601String(),
                 'resolved_at' => $incident->resolved_at?->toIso8601String(),
                 'created_at' => $incident->created_at?->toIso8601String(),

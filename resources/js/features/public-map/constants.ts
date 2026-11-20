@@ -1,4 +1,4 @@
-import type { IncidentStatus, StatusCounts } from '@/types/siagakita';
+import type { IncidentStatus, StatusCounts } from '@/types/pantaura';
 
 export const STATUS_FILTER_OPTIONS: Array<{
     key: keyof StatusCounts;

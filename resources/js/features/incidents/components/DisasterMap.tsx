@@ -12,7 +12,11 @@ import {
 } from 'react-leaflet';
 import { IncidentStatusBadge } from '@/features/incidents/components/StatusBadge';
 import { DISASTER_TYPE_LABELS } from '@/features/incidents/lib/disaster';
-import type { IncidentMarker, IncidentStatus } from '@/types/siagakita';
+import type {
+    IncidentMarker,
+    IncidentStatus,
+    SafeZoneMarker,
+} from '@/types/pantaura';
 
 const STATUS_PIN_COLORS: Record<IncidentStatus, string> = {
     unverified: '#d97706',
@@ -37,7 +41,7 @@ function createIncidentIcon(status: IncidentStatus, count: number): L.DivIcon {
     const displayCount = count > 99 ? '99+' : String(count);
 
     return L.divIcon({
-        className: 'siagakita-marker',
+        className: 'pantaura-marker',
         html: `<div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9999px;background:${color};color:#ffffff;font-weight:700;font-size:12px;border:2.5px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.35);">${displayCount}</div>`,
         iconSize: [32, 32],
         iconAnchor: [16, 16],
@@ -50,10 +54,20 @@ function createClusterIcon(incidentCount: number): L.DivIcon {
     const displayCount = incidentCount > 99 ? '99+' : String(incidentCount);
 
     return L.divIcon({
-        className: 'siagakita-cluster-marker',
+        className: 'pantaura-cluster-marker',
         html: `<div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:9999px;background:#006194;color:#ffffff;font-weight:800;font-size:13px;border:3px solid #ffffff;box-shadow:0 0 0 4px rgba(0,97,148,0.28),0 4px 10px rgba(0,0,0,0.3);">${displayCount}</div>`,
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],
+    });
+}
+
+function createSafeZoneIcon(): L.DivIcon {
+    return L.divIcon({
+        className: 'pantaura-safezone-marker',
+        html: `<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:#0f766e;color:#ffffff;font-weight:800;font-size:14px;border:2.5px solid #ffffff;box-shadow:0 2px 8px rgba(15,118,110,0.45);">+</div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+        popupAnchor: [0, -15],
     });
 }
 
@@ -221,6 +235,29 @@ function ClusteredMarkers({
                                     <p className="text-sm leading-snug font-semibold text-neutral-900">
                                         {incident.title}
                                     </p>
+                                    {(incident.confirmations_count ?? 0) >
+                                        0 && (
+                                        <p className="text-[11px] font-semibold text-emerald-700">
+                                            ✓ Dikonfirmasi{' '}
+                                            {incident.confirmations_count} warga
+                                        </p>
+                                    )}
+                                    {incident.urgent_needs_labels &&
+                                        incident.urgent_needs_labels.length >
+                                            0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                                {incident.urgent_needs_labels.map(
+                                                    (label) => (
+                                                        <span
+                                                            key={label}
+                                                            className="rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700"
+                                                        >
+                                                            {label}
+                                                        </span>
+                                                    ),
+                                                )}
+                                            </div>
+                                        )}
                                     {incident.address && (
                                         <p className="text-xs text-neutral-600">
                                             {incident.address}
@@ -284,6 +321,8 @@ function ClusteredMarkers({
 
 type DisasterMapProps = {
     incidents: IncidentMarker[];
+    safeZones?: SafeZoneMarker[];
+    showSafeZones?: boolean;
     selectedIncidentId?: string | null;
     focusTrigger?: number;
     className?: string;
@@ -293,6 +332,8 @@ type DisasterMapProps = {
 
 export function DisasterMap({
     incidents,
+    safeZones = [],
+    showSafeZones = true,
     selectedIncidentId = null,
     focusTrigger = 0,
     className = 'h-[420px] w-full rounded-lg border',
@@ -349,6 +390,40 @@ export function DisasterMap({
                     detailBasePath={detailBasePath}
                     markerRefs={markerRefs}
                 />
+                {showSafeZones &&
+                    safeZones.map((zone) => (
+                        <Marker
+                            key={`safe-zone-${zone.id}`}
+                            position={[zone.latitude, zone.longitude]}
+                            icon={createSafeZoneIcon()}
+                        >
+                            <Popup minWidth={220}>
+                                <div className="space-y-1.5 py-0.5">
+                                    <span className="inline-block rounded-full bg-teal-50 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
+                                        {zone.type_label}
+                                    </span>
+                                    <p className="text-sm font-semibold text-neutral-900">
+                                        {zone.name}
+                                    </p>
+                                    {zone.address && (
+                                        <p className="text-xs text-neutral-600">
+                                            {zone.address}
+                                        </p>
+                                    )}
+                                    {zone.capacity && (
+                                        <p className="text-xs font-medium text-teal-700">
+                                            Kapasitas: {zone.capacity} orang
+                                        </p>
+                                    )}
+                                    {zone.description && (
+                                        <p className="text-xs text-neutral-700">
+                                            {zone.description}
+                                        </p>
+                                    )}
+                                </div>
+                            </Popup>
+                        </Marker>
+                    ))}
             </MapContainer>
         </div>
     );

@@ -26,7 +26,7 @@ export function ReportInfoDialog({
                     <DialogTitle>Cara melapor bencana</DialogTitle>
                     <DialogDescription className="text-[#3f4850]">
                         Pelaporan warga dilakukan melalui aplikasi mobile
-                        SiagaKita. Web publik ini hanya untuk memantau insiden,
+                        Pantaura. Web publik ini hanya untuk memantau insiden,
                         sedangkan login di sini khusus admin.
                     </DialogDescription>
                 </DialogHeader>
@@ -36,7 +36,7 @@ export function ReportInfoDialog({
                         <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">
                             1
                         </span>
-                        Buka aplikasi mobile SiagaKita di ponsel Anda.
+                        Buka aplikasi mobile Pantaura di ponsel Anda.
                     </li>
                     <li className="flex gap-2.5">
                         <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#e5eeff] text-xs font-bold text-[#006194]">

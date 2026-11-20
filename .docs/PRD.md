@@ -1,5 +1,7 @@
 # PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
 # SiagaKita
+
 **Version:** 1.0 — MVP  
 **Status:** Draft  
 **Product Category:** Disaster Reporting & Monitoring Platform  
@@ -117,19 +119,19 @@ Pengembangan MVP dibagi menjadi tiga bagian utama.
 
 Aplikasi untuk masyarakat.
 
-| ID | Feature | Description | Priority |
-|---|---|---|---|
-| MOB-01 | Authentication | Registrasi dan login pengguna | Must Have |
-| MOB-02 | Home | Ringkasan informasi dan navigasi utama | Must Have |
-| MOB-03 | Disaster Map | Menampilkan persebaran insiden bencana | Must Have |
-| MOB-04 | Create Report | Membuat laporan kejadian bencana | Must Have |
-| MOB-05 | GPS Location | Mengambil koordinat lokasi pengguna | Must Have |
-| MOB-06 | Media Upload | Mengunggah foto dan video | Must Have |
-| MOB-07 | Report Detail | Melihat detail laporan dan insiden | Must Have |
-| MOB-08 | Report Status | Memantau status laporan | Must Have |
-| MOB-09 | Resolution Submission | Mengirim bukti kondisi bencana telah pulih | Must Have |
-| MOB-10 | Additional Report | Memberikan laporan tambahan pada insiden yang sama | Must Have |
-| MOB-11 | Report History | Melihat riwayat kontribusi pengguna | Should Have |
+| ID     | Feature               | Description                                        | Priority    |
+| ------ | --------------------- | -------------------------------------------------- | ----------- |
+| MOB-01 | Authentication        | Registrasi dan login pengguna                      | Must Have   |
+| MOB-02 | Home                  | Ringkasan informasi dan navigasi utama             | Must Have   |
+| MOB-03 | Disaster Map          | Menampilkan persebaran insiden bencana             | Must Have   |
+| MOB-04 | Create Report         | Membuat laporan kejadian bencana                   | Must Have   |
+| MOB-05 | GPS Location          | Mengambil koordinat lokasi pengguna                | Must Have   |
+| MOB-06 | Media Upload          | Mengunggah foto dan video                          | Must Have   |
+| MOB-07 | Report Detail         | Melihat detail laporan dan insiden                 | Must Have   |
+| MOB-08 | Report Status         | Memantau status laporan                            | Must Have   |
+| MOB-09 | Resolution Submission | Mengirim bukti kondisi bencana telah pulih         | Must Have   |
+| MOB-10 | Additional Report     | Memberikan laporan tambahan pada insiden yang sama | Must Have   |
+| MOB-11 | Report History        | Melihat riwayat kontribusi pengguna                | Should Have |
 
 ## 4.2 Web Application — Inertia + React
 
@@ -137,27 +139,27 @@ Web application mencakup dua area: administrator dan public monitoring.
 
 ### A. Admin Dashboard
 
-| ID | Feature | Description | Priority |
-|---|---|---|---|
-| ADM-01 | Admin Authentication | Login administrator | Must Have |
-| ADM-02 | Dashboard Overview | Ringkasan jumlah insiden dan laporan | Must Have |
-| ADM-03 | Report Management | Melihat dan mengelola laporan masuk | Must Have |
-| ADM-04 | Report Verification | Memverifikasi atau menolak laporan | Must Have |
-| ADM-05 | Incident Management | Mengelola insiden bencana | Must Have |
-| ADM-06 | Report Grouping | Mengelompokkan laporan yang berkaitan | Must Have |
-| ADM-07 | Resolution Verification | Memverifikasi bukti penyelesaian | Must Have |
-| ADM-08 | User Management | Melihat dan mengelola pengguna | Should Have |
+| ID     | Feature                 | Description                           | Priority    |
+| ------ | ----------------------- | ------------------------------------- | ----------- |
+| ADM-01 | Admin Authentication    | Login administrator                   | Must Have   |
+| ADM-02 | Dashboard Overview      | Ringkasan jumlah insiden dan laporan  | Must Have   |
+| ADM-03 | Report Management       | Melihat dan mengelola laporan masuk   | Must Have   |
+| ADM-04 | Report Verification     | Memverifikasi atau menolak laporan    | Must Have   |
+| ADM-05 | Incident Management     | Mengelola insiden bencana             | Must Have   |
+| ADM-06 | Report Grouping         | Mengelompokkan laporan yang berkaitan | Must Have   |
+| ADM-07 | Resolution Verification | Memverifikasi bukti penyelesaian      | Must Have   |
+| ADM-08 | User Management         | Melihat dan mengelola pengguna        | Should Have |
 
 ### B. Public Monitoring Web
 
-| ID | Feature | Description | Priority |
-|---|---|---|---|
-| PUB-01 | Public Map | Menampilkan titik insiden bencana | Must Have |
-| PUB-02 | Incident Status | Menampilkan status setiap insiden | Must Have |
-| PUB-03 | Incident Detail | Melihat detail kejadian | Must Have |
-| PUB-04 | Report Count | Menampilkan jumlah laporan pada insiden | Must Have |
-| PUB-05 | Evidence Viewer | Melihat bukti foto/video yang dapat diakses publik | Must Have |
-| PUB-06 | Status Filter | Memfilter insiden berdasarkan status | Should Have |
+| ID     | Feature         | Description                                        | Priority    |
+| ------ | --------------- | -------------------------------------------------- | ----------- |
+| PUB-01 | Public Map      | Menampilkan titik insiden bencana                  | Must Have   |
+| PUB-02 | Incident Status | Menampilkan status setiap insiden                  | Must Have   |
+| PUB-03 | Incident Detail | Melihat detail kejadian                            | Must Have   |
+| PUB-04 | Report Count    | Menampilkan jumlah laporan pada insiden            | Must Have   |
+| PUB-05 | Evidence Viewer | Melihat bukti foto/video yang dapat diakses publik | Must Have   |
+| PUB-06 | Status Filter   | Memfilter insiden berdasarkan status               | Should Have |
 
 ---
 
@@ -251,19 +253,20 @@ Berbeda dengan laporan awal, bukti penyelesaian dapat dikirim oleh warga lain, t
 
 Status berikut digunakan pada tingkat insiden.
 
-| Status | Description | Public Visibility |
-|---|---|---|
-| `unverified` | Insiden baru, menunggu verifikasi | Visible |
-| `verified` | Insiden telah dikonfirmasi admin | Visible |
-| `resolution_submitted` | Bukti penyelesaian sedang diperiksa | Visible |
-| `resolved` | Insiden telah dinyatakan selesai | Visible |
-| `rejected` | Insiden dinyatakan tidak valid | Hidden from active incident map; retained in history |
+| Status                 | Description                         | Public Visibility                                    |
+| ---------------------- | ----------------------------------- | ---------------------------------------------------- |
+| `unverified`           | Insiden baru, menunggu verifikasi   | Visible                                              |
+| `verified`             | Insiden telah dikonfirmasi admin    | Visible                                              |
+| `resolution_submitted` | Bukti penyelesaian sedang diperiksa | Visible                                              |
+| `resolved`             | Insiden telah dinyatakan selesai    | Visible                                              |
+| `rejected`             | Insiden dinyatakan tidak valid      | Hidden from active incident map; retained in history |
 
 ### Status Transition
 
 `unverified` → `verified` → `resolution_submitted` → `resolved`
 
 Penolakan:
+
 - `unverified` → `rejected`
 - `resolution_submitted` → `verified`
 
@@ -278,6 +281,7 @@ Catatan: Pengelolaan laporan tambahan dalam satu insiden tidak otomatis mengubah
 Sistem harus menyediakan autentikasi untuk masyarakat dan administrator.
 
 Persyaratan:
+
 - Masyarakat dapat melakukan registrasi.
 - Masyarakat dapat login dan logout.
 - Administrator memiliki akses dashboard berdasarkan role.
@@ -288,6 +292,7 @@ Persyaratan:
 Sistem harus dapat menyimpan lokasi kejadian.
 
 Persyaratan:
+
 - Aplikasi meminta izin akses GPS.
 - Koordinat latitude dan longitude disimpan.
 - Pengguna dapat menyesuaikan pin lokasi apabila GPS kurang akurat.
@@ -298,6 +303,7 @@ Persyaratan:
 Sistem harus mendukung upload foto dan video.
 
 Persyaratan:
+
 - Mendukung format media yang ditentukan aplikasi.
 - Memvalidasi MIME type dan ukuran file.
 - Menyimpan file menggunakan Laravel Filesystem.
@@ -311,6 +317,7 @@ Persyaratan:
 Sistem harus menampilkan persebaran insiden bencana.
 
 Persyaratan:
+
 - Menampilkan titik berdasarkan koordinat insiden.
 - Menampilkan status melalui warna atau simbol berbeda.
 - Menampilkan jumlah laporan dalam satu insiden.
@@ -322,6 +329,7 @@ Persyaratan:
 Administrator harus dapat melakukan pemeriksaan laporan.
 
 Persyaratan:
+
 - Melihat informasi pelapor.
 - Melihat lokasi kejadian.
 - Melihat deskripsi.
@@ -334,6 +342,7 @@ Persyaratan:
 Administrator harus dapat mengelompokkan beberapa laporan menjadi satu insiden.
 
 Persyaratan:
+
 - Memilih laporan yang memiliki keterkaitan.
 - Menghubungkan laporan dengan insiden.
 - Mempertahankan seluruh data laporan.
@@ -345,6 +354,7 @@ Persyaratan:
 Administrator harus dapat memverifikasi bukti penyelesaian.
 
 Persyaratan:
+
 - Melihat bukti terbaru.
 - Melihat informasi pengirim.
 - Menerima atau menolak pengajuan.
@@ -362,6 +372,7 @@ Berikut gambaran entitas utama yang diperlukan.
 Menyimpan informasi pengguna.
 
 Fields:
+
 - id
 - name
 - email
@@ -371,6 +382,7 @@ Fields:
 - updated_at
 
 Role:
+
 - citizen
 - admin
 
@@ -379,6 +391,7 @@ Role:
 Merepresentasikan satu kejadian bencana.
 
 Fields:
+
 - id
 - title
 - description
@@ -397,6 +410,7 @@ Fields:
 Merepresentasikan kontribusi laporan dari masing-masing warga.
 
 Fields:
+
 - id
 - incident_id (nullable saat belum dikelompokkan)
 - user_id
@@ -413,6 +427,7 @@ Fields:
 Menyimpan bukti visual laporan.
 
 Fields:
+
 - id
 - report_id
 - file_path
@@ -426,6 +441,7 @@ Fields:
 Menyimpan pengajuan bukti penyelesaian insiden.
 
 Fields:
+
 - id
 - incident_id
 - user_id
@@ -441,6 +457,7 @@ Fields:
 Menyimpan foto/video bukti penyelesaian.
 
 Fields:
+
 - id
 - resolution_submission_id
 - file_path
@@ -453,6 +470,7 @@ Fields:
 Mencatat perubahan status insiden.
 
 Fields:
+
 - id
 - incident_id
 - previous_status
@@ -472,6 +490,7 @@ SiagaKita menggunakan dua repository utama.
 ## 9.1 Repository: siagakita-web
 
 Stack:
+
 - Laravel 13
 - Inertia.js
 - React
@@ -485,6 +504,7 @@ Stack:
 - Laravel Filesystem
 
 Responsibilities:
+
 - REST API.
 - Admin dashboard.
 - Public monitoring web.
@@ -498,6 +518,7 @@ Responsibilities:
 ## 9.2 Repository: siagakita-mobile
 
 Stack:
+
 - Flutter
 - Dart
 - Riverpod
@@ -508,6 +529,7 @@ Stack:
 - Image picker and camera integration
 
 Responsibilities:
+
 - Citizen authentication.
 - Multi-disaster reporting (flood, earthquake, landslide, fire).
 - GPS location.
@@ -526,18 +548,18 @@ API menggunakan versioning:
 
 Contoh endpoint awal:
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/v1/auth/register` | Registrasi warga |
-| POST | `/api/v1/auth/login` | Login |
-| POST | `/api/v1/auth/logout` | Logout |
-| GET | `/api/v1/incidents` | Daftar insiden |
-| GET | `/api/v1/incidents/{id}` | Detail insiden |
-| POST | `/api/v1/reports` | Membuat laporan |
-| GET | `/api/v1/reports/my` | Riwayat laporan |
-| POST | `/api/v1/incidents/{id}/reports` | Laporan tambahan |
-| POST | `/api/v1/incidents/{id}/resolutions` | Mengajukan penyelesaian |
-| GET | `/api/v1/incidents/map` | Data peta insiden |
+| Method | Endpoint                             | Description             |
+| ------ | ------------------------------------ | ----------------------- |
+| POST   | `/api/v1/auth/register`              | Registrasi warga        |
+| POST   | `/api/v1/auth/login`                 | Login                   |
+| POST   | `/api/v1/auth/logout`                | Logout                  |
+| GET    | `/api/v1/incidents`                  | Daftar insiden          |
+| GET    | `/api/v1/incidents/{id}`             | Detail insiden          |
+| POST   | `/api/v1/reports`                    | Membuat laporan         |
+| GET    | `/api/v1/reports/my`                 | Riwayat laporan         |
+| POST   | `/api/v1/incidents/{id}/reports`     | Laporan tambahan        |
+| POST   | `/api/v1/incidents/{id}/resolutions` | Mengajukan penyelesaian |
+| GET    | `/api/v1/incidents/map`              | Data peta insiden       |
 
 Endpoint administratif dikelola melalui route web dan/atau API khusus dengan middleware role administrator.
 
@@ -562,12 +584,14 @@ Storage harus menggunakan persistent volume ketika deployment agar file tidak hi
 # 10. Non-Functional Requirements
 
 ## Performance
+
 - Halaman utama harus dapat dibuka dengan waktu respons yang wajar.
 - Peta tidak boleh mengambil seluruh data media sekaligus.
 - Data peta menggunakan pagination atau viewport-based loading apabila diperlukan.
 - Upload media harus memiliki batas ukuran file.
 
 ## Security
+
 - Password disimpan menggunakan hashing.
 - Endpoint yang membutuhkan autentikasi harus dilindungi.
 - Role administrator dan masyarakat harus dipisahkan.
@@ -576,12 +600,14 @@ Storage harus menggunakan persistent volume ketika deployment agar file tidak hi
 - Setiap keputusan verifikasi memiliki catatan audit.
 
 ## Reliability
+
 - Kegagalan upload tidak boleh membuat laporan tersimpan sebagai laporan lengkap tanpa bukti.
 - Perubahan status harus dilakukan secara konsisten.
 - Riwayat status tidak boleh hilang.
 - Sistem harus menangani kegagalan koneksi API.
 
 ## Usability
+
 - Form pelaporan harus sederhana.
 - Penggunaan GPS harus mudah dipahami.
 - Status laporan harus terlihat jelas.
@@ -613,6 +639,7 @@ Fokus utama tetap pada pelaporan, pemantauan, pengelompokan insiden, dan verifik
 MVP dianggap berhasil apabila skenario berikut dapat berjalan.
 
 ### Scenario 1: Citizen Creates a Disaster Report
+
 - Pengguna berhasil login.
 - Pengguna mengirim lokasi GPS.
 - Pengguna mengisi deskripsi.
@@ -621,6 +648,7 @@ MVP dianggap berhasil apabila skenario berikut dapat berjalan.
 - Laporan muncul di peta publik dengan status `unverified`.
 
 ### Scenario 2: Admin Verifies a Report
+
 - Admin berhasil login.
 - Admin membuka daftar laporan.
 - Admin memeriksa bukti.
@@ -629,6 +657,7 @@ MVP dianggap berhasil apabila skenario berikut dapat berjalan.
 - Public web menampilkan status terbaru.
 
 ### Scenario 3: Multiple Citizens Report the Same Incident
+
 - Dua atau lebih warga mengirim laporan di lokasi kejadian yang sama atau berdekatan.
 - Sistem dapat memberikan rekomendasi laporan yang berpotensi sama.
 - Admin dapat mengelompokkan laporan tersebut.
@@ -636,6 +665,7 @@ MVP dianggap berhasil apabila skenario berikut dapat berjalan.
 - Public map menampilkan satu titik insiden dengan jumlah laporan yang sesuai.
 
 ### Scenario 4: Citizen Submits Resolution Evidence
+
 - Pengguna membuka detail insiden.
 - Pengguna mengirim foto/video kondisi terbaru.
 - Pengajuan berhasil disimpan.
@@ -643,12 +673,14 @@ MVP dianggap berhasil apabila skenario berikut dapat berjalan.
 - Admin dapat memeriksa bukti.
 
 ### Scenario 5: Admin Approves Resolution
+
 - Admin memeriksa bukti penyelesaian.
 - Admin menyetujui pengajuan.
 - Status berubah menjadi `resolved`.
 - Insiden tetap dapat dilihat di peta publik sebagai insiden selesai.
 
 ### Scenario 6: Admin Rejects Resolution
+
 - Admin menolak bukti penyelesaian.
 - Admin memberikan alasan penolakan.
 - Status insiden kembali menjadi `verified`.
@@ -660,16 +692,16 @@ MVP dianggap berhasil apabila skenario berikut dapat berjalan.
 
 Pengembangan direkomendasikan dalam beberapa tahap.
 
-| Phase | Scope | Deliverables |
-|---|---|---|
-| Phase 1 | Foundation | Setup repository, database, authentication |
-| Phase 2 | Backend Core | Reports, incidents, media upload, API |
-| Phase 3 | Mobile Reporting | Flutter authentication dan pelaporan |
-| Phase 4 | Web Monitoring | Public map dan incident detail |
-| Phase 5 | Admin Management | Verification dan incident grouping |
-| Phase 6 | Resolution Flow | Submission dan verification penyelesaian |
-| Phase 7 | Integration & Testing | Integrasi mobile-web, QA, bug fixing |
-| Phase 8 | Deployment | Deployment MVP untuk demonstrasi kompetisi |
+| Phase   | Scope                 | Deliverables                               |
+| ------- | --------------------- | ------------------------------------------ |
+| Phase 1 | Foundation            | Setup repository, database, authentication |
+| Phase 2 | Backend Core          | Reports, incidents, media upload, API      |
+| Phase 3 | Mobile Reporting      | Flutter authentication dan pelaporan       |
+| Phase 4 | Web Monitoring        | Public map dan incident detail             |
+| Phase 5 | Admin Management      | Verification dan incident grouping         |
+| Phase 6 | Resolution Flow       | Submission dan verification penyelesaian   |
+| Phase 7 | Integration & Testing | Integrasi mobile-web, QA, bug fixing       |
+| Phase 8 | Deployment            | Deployment MVP untuk demonstrasi kompetisi |
 
 Tahapan dapat dikerjakan secara paralel setelah API contract tersedia.
 
@@ -696,18 +728,18 @@ Tahapan dapat dikerjakan secara paralel setelah API contract tersedia.
 
 Beberapa keputusan berikut masih perlu difinalisasi sebelum development:
 
-| Topic | Current Recommendation | Status |
-|---|---|---|
-| Database | PostgreSQL + PostGIS | Pending |
-| Citizen registration | Account-based reporting | Proposed |
-| GPS fallback | Manual pin adjustment | Proposed |
-| Incident grouping | Admin-assisted grouping | Agreed |
-| Resolution submission | Any authenticated citizen | Agreed |
-| Resolution approval | Admin verification | Agreed |
-| Media storage | Laravel Local Storage | Agreed |
-| Web/mobile repositories | Separate repositories | Agreed |
-| API documentation | OpenAPI / Swagger | Proposed |
-| Notification | Basic in-app status refresh | Proposed |
+| Topic                   | Current Recommendation      | Status   |
+| ----------------------- | --------------------------- | -------- |
+| Database                | PostgreSQL + PostGIS        | Pending  |
+| Citizen registration    | Account-based reporting     | Proposed |
+| GPS fallback            | Manual pin adjustment       | Proposed |
+| Incident grouping       | Admin-assisted grouping     | Agreed   |
+| Resolution submission   | Any authenticated citizen   | Agreed   |
+| Resolution approval     | Admin verification          | Agreed   |
+| Media storage           | Laravel Local Storage       | Agreed   |
+| Web/mobile repositories | Separate repositories       | Agreed   |
+| API documentation       | OpenAPI / Swagger           | Proposed |
+| Notification            | Basic in-app status refresh | Proposed |
 
 ---
 

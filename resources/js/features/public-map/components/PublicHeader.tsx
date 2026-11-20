@@ -16,7 +16,7 @@ export function PublicHeader({ auth }: { auth?: Auth }) {
                     </span>
                     <div>
                         <span className="block text-base font-bold tracking-tight text-[#006194]">
-                            SiagaKita
+                            Pantaura
                         </span>
                         <span className="hidden text-xs text-[#3f4850] sm:block">
                             Pantauan Bencana &amp; Tanggap Darurat Publik

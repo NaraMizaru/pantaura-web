@@ -18,7 +18,7 @@ shell:
 	docker compose -f docker-compose.yaml -p ${DOCKER_NAME} exec -it web sh;
 
 docker-build-web:
-	docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} -f Dockerfile -t siagakita/web:${IMAGE_VERSION} .
+	docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} -f Dockerfile -t pantaura/web:${IMAGE_VERSION} .
 
 migrate-fresh:
 	php artisan migrate:fresh --force && php artisan optimize:clear && php artisan db:seed --force

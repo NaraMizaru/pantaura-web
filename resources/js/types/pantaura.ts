@@ -1,5 +1,15 @@
 export type DisasterType = 'flood' | 'earthquake' | 'landslide' | 'fire';
 
+export type UrgentNeed =
+    | 'rubber_boat'
+    | 'medical_evacuation'
+    | 'clean_water'
+    | 'food'
+    | 'power_outage'
+    | 'shelter';
+
+export type SafeZoneType = 'posko' | 'evacuation' | 'medical' | 'logistics';
+
 export type IncidentStatus =
     | 'unverified'
     | 'verified'
@@ -25,6 +35,8 @@ export type IncidentMarker = {
     title: string;
     disaster_type: DisasterType;
     disaster_type_label: string;
+    urgent_needs?: UrgentNeed[];
+    urgent_needs_labels?: string[];
     description: string;
     latitude: number;
     longitude: number;
@@ -32,7 +44,21 @@ export type IncidentMarker = {
     status: IncidentStatus;
     status_label: string;
     reports_count: number;
+    confirmations_count?: number;
     created_at: string | null;
+};
+
+export type SafeZoneMarker = {
+    id: string;
+    name: string;
+    type: SafeZoneType;
+    type_label: string;
+    description: string | null;
+    latitude: number;
+    longitude: number;
+    address: string | null;
+    capacity: number | null;
+    is_active?: boolean;
 };
 
 export type StatusCounts = {

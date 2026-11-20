@@ -23,7 +23,7 @@ import type {
     IncidentStatus,
     MediaItem,
     ModerationStatus,
-} from '@/types/siagakita';
+} from '@/types/pantaura';
 
 type ReportShowProps = {
     report: {
@@ -184,8 +184,8 @@ export default function AdminReportShow({
                                         report.incident?.disaster_type ??
                                         'flood',
                                     disaster_type_label:
-                                        report.incident
-                                            ?.disaster_type_label ?? 'Banjir',
+                                        report.incident?.disaster_type_label ??
+                                        'Banjir',
                                     description: report.description,
                                     latitude: report.latitude,
                                     longitude: report.longitude,
@@ -225,11 +225,7 @@ export default function AdminReportShow({
                                     <p className="font-semibold">
                                         {report.incident.title}
                                     </p>
-                                    <Button
-                                        asChild
-                                        variant="outline"
-                                        size="sm"
-                                    >
+                                    <Button asChild variant="outline" size="sm">
                                         <Link
                                             href={`/admin/incidents/${report.incident.id}`}
                                         >

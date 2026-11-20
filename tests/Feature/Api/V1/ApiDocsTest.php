@@ -9,7 +9,7 @@ it('renders the swagger ui page for api docs', function (): void {
     $response = $this->get(route('api.docs'));
 
     $response->assertOk();
-    $response->assertSee('SiagaKita REST API Documentation');
+    $response->assertSee('Pantaura REST API Documentation');
     $response->assertSee('/docs/openapi.yaml');
 });
 
@@ -31,10 +31,17 @@ it('provides a complete openapi 3 specification for all v1 endpoints', function 
             '/auth/me',
             '/incidents',
             '/incidents/map',
+            '/incidents/nearby',
             '/incidents/{incident}',
+            '/incidents/{incident}/confirm',
+            '/safe-zones',
             '/reports',
             '/reports/my',
             '/incidents/{incident}/reports',
             '/incidents/{incident}/resolutions',
+            '/watch-areas',
+            '/watch-areas/{watchArea}',
+            '/alerts',
+            '/alerts/{alert}/read',
         ]);
 });

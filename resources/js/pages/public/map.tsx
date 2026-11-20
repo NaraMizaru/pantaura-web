@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { Search, Smartphone } from 'lucide-react';
+import { Search, ShieldPlus, Smartphone } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DisasterMap } from '@/features/incidents/components/DisasterMap';
@@ -16,11 +16,13 @@ import type {
     DisasterTypeCounts,
     IncidentMarker,
     IncidentStatus,
+    SafeZoneMarker,
     StatusCounts,
-} from '@/types/siagakita';
+} from '@/types/pantaura';
 
 type PublicMapProps = {
     incidents: IncidentMarker[];
+    safeZones?: SafeZoneMarker[];
     activeStatus: IncidentStatus | null;
     activeType: DisasterType | null;
     statusCounts: StatusCounts;
@@ -29,6 +31,7 @@ type PublicMapProps = {
 
 export default function PublicMap({
     incidents,
+    safeZones = [],
     activeStatus,
     activeType,
     statusCounts,
@@ -39,6 +42,7 @@ export default function PublicMap({
         incidents[0]?.id ?? null,
     );
     const [focusTrigger, setFocusTrigger] = useState(0);
+    const [showSafeZones, setShowSafeZones] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'newest' | 'most_reports'>('newest');
     const [reportInfoOpen, setReportInfoOpen] = useState(false);
@@ -123,7 +127,7 @@ export default function PublicMap({
                             <div>
                                 <p className="text-sm font-semibold text-[#0b1c30]">
                                     Pelaporan warga dilakukan melalui aplikasi
-                                    mobile SiagaKita
+                                    mobile Pantaura
                                 </p>
                                 <p className="text-xs text-[#3f4850]">
                                     Web ini untuk pemantauan publik. Untuk
@@ -168,10 +172,33 @@ export default function PublicMap({
 
                     <DisasterMap
                         incidents={filteredIncidents}
+                        safeZones={safeZones}
+                        showSafeZones={showSafeZones}
                         selectedIncidentId={selectedId}
                         focusTrigger={focusTrigger}
                         className="h-[460px] w-full sm:h-[540px] lg:h-[580px]"
                     />
+
+                    {/* Safe Zone Layer Toggle */}
+                    <div className="pointer-events-none absolute bottom-4 left-4 z-20">
+                        <button
+                            type="button"
+                            onClick={() => setShowSafeZones((prev) => !prev)}
+                            className={`pointer-events-auto inline-flex min-h-[38px] items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-md transition-colors ${
+                                showSafeZones
+                                    ? 'border-teal-600 bg-teal-700 text-white hover:bg-teal-800'
+                                    : 'border-white/70 bg-white/95 text-[#0b1c30] hover:bg-[#eff4ff]'
+                            }`}
+                        >
+                            <ShieldPlus
+                                className="size-3.5"
+                                aria-hidden="true"
+                            />
+                            <span>
+                                Posko &amp; Titik Aman ({safeZones.length})
+                            </span>
+                        </button>
+                    </div>
 
                     {/* Floating Legend Card */}
                     <div className="pointer-events-none absolute right-4 bottom-4 z-20 hidden md:block">
@@ -229,7 +256,10 @@ export default function PublicMap({
                                 className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#707881]"
                                 aria-hidden="true"
                             />
-                            <label htmlFor="incident-search" className="sr-only">
+                            <label
+                                htmlFor="incident-search"
+                                className="sr-only"
+                            >
                                 Cari lokasi atau judul insiden
                             </label>
                             <input
@@ -263,9 +293,7 @@ export default function PublicMap({
                                 value={activeType ?? 'all'}
                                 onChange={(e) =>
                                     handleTypeFilter(
-                                        e.target.value as
-                                            | DisasterType
-                                            | 'all',
+                                        e.target.value as DisasterType | 'all',
                                     )
                                 }
                                 className="min-h-[42px] rounded-lg bg-[#eff4ff] px-3 py-2 text-sm font-medium text-[#0b1c30] focus:ring-2 focus:ring-[#0284c7] focus:outline-none"
@@ -333,7 +361,7 @@ export default function PublicMap({
                 </main>
 
                 <footer className="border-t border-slate-200 bg-white py-5 text-center text-xs text-[#3f4850]">
-                    SiagaKita — Platform Pelaporan &amp; Pemantauan Bencana
+                    Pantaura — Platform Pelaporan &amp; Pemantauan Bencana
                     Berbasis Partisipasi Masyarakat
                 </footer>
 

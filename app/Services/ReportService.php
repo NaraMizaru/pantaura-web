@@ -24,7 +24,7 @@ class ReportService
     ) {}
 
     /**
-     * @param  array{latitude: float, longitude: float, description: string, address?: string|null, disaster_type?: DisasterType}  $data
+     * @param  array{latitude: float, longitude: float, description: string, address?: string|null, disaster_type?: DisasterType, urgent_needs?: list<string>}  $data
      * @param  array<int, UploadedFile>  $files
      */
     public function createInitialReport(User $citizen, array $data, array $files): Report
@@ -43,6 +43,7 @@ class ReportService
                 $incident = Incident::create([
                     'title' => $title,
                     'disaster_type' => $disasterType,
+                    'urgent_needs' => $data['urgent_needs'] ?? null,
                     'description' => $data['description'],
                     'latitude' => $data['latitude'],
                     'longitude' => $data['longitude'],
