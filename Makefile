@@ -6,19 +6,33 @@ IMAGE_VERSION ?= latest
 export IMAGE_VERSION
 
 ps:
-	docker compose -f docker-compose.yaml -p ${DOCKER_NAME} ps;
+	@if [ "$(APP_ENV)" = "local" ]; then \
+		docker compose -f docker-compose.local.yaml -p ${DOCKER_NAME} ps; \
+	else \
+		docker compose -f docker-compose.production.yaml -p ${DOCKER_NAME} ps; \
+	fi
 
 serve:
-	docker compose -f docker-compose.yaml -p ${DOCKER_NAME} up -d;
+	@if [ "$(APP_ENV)" = "local" ]; then \
+		docker compose -f docker-compose.local.yaml -p ${DOCKER_NAME} up -d; \
+	else \
+		docker compose -f docker-compose.production.yaml -p ${DOCKER_NAME} up -d; \
+	fi
 
 down:
-	docker compose -f docker-compose.yaml -p ${DOCKER_NAME} down;
+	@if [ "$(APP_ENV)" = "local" ]; then \
+		docker compose -f docker-compose.local.yaml -p ${DOCKER_NAME} down; \
+	else \
+		docker compose -f docker-compose.production.yaml -f docker-compose.util.yaml -p ${DOCKER_NAME} down; \
+	fi
 
 shell:
-	docker compose -f docker-compose.yaml -p ${DOCKER_NAME} exec -it web sh;
+	@if [ "$(APP_ENV)" = "local" ]; then \
+		docker compose -f docker-compose.local.yaml -p ${DOCKER_NAME} exec -it web sh; \
+	else \
+		docker compose -f docker-compose.production.yaml -p ${DOCKER_NAME} exec -it fpm sh; \
+	fi
 
 docker-build-web:
-	docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} -f Dockerfile -t pantaura/web:${IMAGE_VERSION} .
+	docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} -f ops/${APP_ENV}/Dockerfile -t pantaura/web:${IMAGE_VERSION} .
 
-migrate-fresh:
-	php artisan migrate:fresh --force && php artisan optimize:clear && php artisan db:seed --force
