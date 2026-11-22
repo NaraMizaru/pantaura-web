@@ -23,7 +23,7 @@ down:
 	@if [ "$(APP_ENV)" = "local" ]; then \
 		docker compose -f docker-compose.local.yaml -p ${DOCKER_NAME} down; \
 	else \
-		docker compose -f docker-compose.production.yaml -f docker-compose.util.yaml -p ${DOCKER_NAME} down; \
+		docker compose -f docker-compose.production.yaml -p ${DOCKER_NAME} down; \
 	fi
 
 shell:
