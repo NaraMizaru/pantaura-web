@@ -27,6 +27,17 @@ USER www-data
 EXPOSE 9000
 CMD ["php-fpm"]
 
+# Wayfinder: Generate TypeScript route & action types using PHP
+FROM fpm AS wayfinder
+
+USER root
+WORKDIR /opt/apps/pantaura
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
+COPY . .
+RUN APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+    php artisan wayfinder:generate --with-form
+
 # Frontend: Node.js container to build frontend assets
 FROM node:22-alpine AS frontend
 
@@ -35,7 +46,10 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+COPY --from=wayfinder /opt/apps/pantaura/resources/js/actions ./resources/js/actions
+COPY --from=wayfinder /opt/apps/pantaura/resources/js/routes ./resources/js/routes
+COPY --from=wayfinder /opt/apps/pantaura/resources/js/wayfinder ./resources/js/wayfinder
+RUN WAYFINDER_SKIP=true npm run build
 
 # Web: Nginx container to serve the application
 FROM nginx:1.26-alpine AS web
