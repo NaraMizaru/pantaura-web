@@ -4,7 +4,7 @@ server {
 
     # We need to set the root for our server,
     # so any static file requests gets loaded from the correct path
-    root /opt/apps/evoting/public;
+    root /opt/apps/pantaura/public;
 
     index index.php index.html index.htm index.nginx-debian.html;
 
