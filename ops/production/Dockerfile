@@ -9,8 +9,8 @@ ARG PHP_PECL_EXTS="redis"
 WORKDIR /opt/apps/pantaura
 
 RUN apk add --no-cache --virtual .build-deps ${PHPIZE_DEPS} \
-        freetype-dev libjpeg-turbo-dev libpng-dev libzip-dev curl-dev oniguruma-dev libxml2-dev postgresql-dev \
-    && apk add --no-cache freetype libjpeg-turbo libpng libzip curl postgresql-libs \
+        freetype-dev libjpeg-turbo-dev libpng-dev libzip-dev curl-dev oniguruma-dev libxml2-dev postgresql-dev icu-dev \
+    && apk add --no-cache freetype libjpeg-turbo libpng libzip curl postgresql-libs icu-libs \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) ${PHP_EXTS} \
     && pecl install ${PHP_PECL_EXTS} \
@@ -35,7 +35,9 @@ WORKDIR /opt/apps/pantaura
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
 COPY . .
-RUN APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+RUN rm -f bootstrap/cache/*.php \
+    && composer dump-autoload --no-dev --optimize \
+    && APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
     php artisan wayfinder:generate --with-form
 
 # Frontend: Node.js container to build frontend assets
