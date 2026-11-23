@@ -7,6 +7,8 @@ info:
         Jenis bencana yang didukung: `flood` (Banjir), `earthquake` (Gempa Bumi), `landslide` (Tanah Longsor), dan `fire` (Kebakaran).
         Autentikasi menggunakan Laravel Sanctum Personal Access Token (`Authorization: Bearer <token>`).
 servers:
+    - url: /api/v1
+      description: Current server (otomatis mengikuti domain hosting aktif)
     - url: http://localhost:8080/api/v1
       description: Local Docker server
 
